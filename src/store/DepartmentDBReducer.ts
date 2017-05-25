@@ -1,5 +1,3 @@
-import { actionCreators } from './InstitutionReducer';
-import { DepartmentDBState } from './DepartmentDBReducer';
 import { AppThunkAction } from './index';
 import { DepartmentDB, Institution } from './../services/data-types';
 import { Reducer } from 'redux';
@@ -48,14 +46,14 @@ interface SelectDeptDBAction {
 type KnownAction = RequestDepartmentDBsAction | ReceiveDepartmentDBsAction
     | RequestInstitutionsAction | ReceiveInstitutionsAction | SelectDeptDBAction;
 
-const fetchInstitutions = (deptDBID: number, dispatch: AppThunkAction<KnownAction>) => {
-    let reqTxt = `${baseUrl}Institutions?$filter=DeptDBID eq ${deptDBID}&$top=100&$expand=FederalInstitution`;
-    fetch(reqTxt)
-        .then(response => response.json())
-        .then(data => {
-            dispatch({ type: 'RECEIVE_INSTITUTIONS', activeInstitutions: data.value });
-        });
-};
+// const fetchInstitutions = (deptDBID: number, dispatch: AppThunkAction<KnownAction>) => {
+//     let reqTxt = `${baseUrl}Institutions?$filter=DeptDBID eq ${deptDBID}&$top=100&$expand=FederalInstitution`;
+//     fetch(reqTxt)
+//         .then(response => response.json())
+//         .then(data => {
+//             dispatch({ type: 'RECEIVE_INSTITUTIONS', activeInstitutions: data.value });
+//         });
+// };
 
 export const actionCreators = {
     requestDepartmentDBs: (searchTxt: string): AppThunkAction<KnownAction> => (dispatch, getState) => {
@@ -68,13 +66,13 @@ export const actionCreators = {
             .then(data => {
                 let deptDBID: number = data.value[0].DeptDBID;
 
-                let instTxt = `${baseUrl}Institutions?$filter=DeptDBID eq ${deptDBID}&$top=100&$expand=FederalInstitution`;
-                fetch(instTxt)
-                    .then(response => response.json())
-                    .then(insts => {
-                        dispatch({ type: 'RECEIVE_INSTITUTIONS', activeInstitutions: insts.value });
-                    });
-
+                // let instTxt = `${baseUrl}Institutions?$filter=DeptDBID 
+                // eq ${deptDBID}&$top=100&$expand=FederalInstitution`;
+                // fetch(instTxt)
+                //     .then(response => response.json())
+                //     .then(insts => {
+                //         dispatch({ type: 'RECEIVE_INSTITUTIONS', activeInstitutions: insts.value });
+                //     });
                 dispatch({ type: 'REQUEST_INSTITUTIONS', deptDBID: deptDBID });
 
                 dispatch({ type: 'RECEIVE_DEPARTMENTDBS', searchTxt: searchTxt, departmentDBs: data.value });
@@ -87,9 +85,11 @@ export const actionCreators = {
         // let nameFilter = `$filter=startswith(Name, '${searchTxt}')&`;
         let reqTxt = `${baseUrl}Institutions?$filter=DeptDBID eq ${deptDBID}&$top=100&$expand=FederalInstitution`;
 
+        console.dir('here');
         fetch(reqTxt)
             .then(response => response.json())
             .then(data => {
+                console.dir('here');
                 dispatch({ type: 'RECEIVE_INSTITUTIONS', activeInstitutions: data.value });
             });
 
@@ -97,7 +97,6 @@ export const actionCreators = {
     },
 
     selectDeptDB: (deptDBID: number): AppThunkAction<KnownAction> => (dispatch, getState) => {
-        fetchInstitutions(deptDBID, dispatch);
 
         dispatch({ type: 'SELECT_DEPTDB', deptDBID: deptDBID });
     }
@@ -114,6 +113,7 @@ const unloadedState: DepartmentDBState = {
 export const reducer: Reducer<DepartmentDBState> = (state: DepartmentDBState, action: KnownAction) => {
     switch (action.type) {
         case 'REQUEST_DEPARTMENTDBS':
+
             return {
                 ...state,
                 departmentDBs: [],
@@ -121,8 +121,8 @@ export const reducer: Reducer<DepartmentDBState> = (state: DepartmentDBState, ac
             };
 
         case 'RECEIVE_DEPARTMENTDBS':
-            actionCreators.requestInstitutions(action.departmentDBs[0].DeptDBID);
 
+            actionCreators.requestInstitutions(action.departmentDBs[0].DeptDBID);
             return {
                 ...state,
                 activeDeptDB: action.departmentDBs ? action.departmentDBs[0] : undefined,
@@ -131,6 +131,8 @@ export const reducer: Reducer<DepartmentDBState> = (state: DepartmentDBState, ac
             };
 
         case 'REQUEST_INSTITUTIONS':
+
+            console.dir('reqw');
             return {
                 ...state,
                 activeInstitutions: [],
@@ -145,9 +147,12 @@ export const reducer: Reducer<DepartmentDBState> = (state: DepartmentDBState, ac
             };
 
         case 'SELECT_DEPTDB':
+            let activeDB = state.departmentDBs.filter(d => d.DeptDBID === action.deptDBID)[0];
+
+            actionCreators.requestInstitutions(activeDB.DeptDBID);
             return {
                 ...state,
-                activeDeptDB: state.departmentDBs.filter(d => d.DeptDBID === action.deptDBID)[0],
+                activeDeptDB: activeDB,
             };
 
         default:
