@@ -1,15 +1,14 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
-// import App from './App';
-import DepartmentDBsView from './components/DepartmentDBsView';
-import InstitutionsView from './components/InstitutionsView';
+import App from './App';
+// import DepartmentDBsView from './components/DepartmentDBsView';
+// import InstitutionsView from './components/InstitutionsView';
 import { Provider } from 'react-redux';
 import './index.css';
 import configureStore from './configureStore';
 import getMuiTheme from 'material-ui/styles/getMuiTheme';
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import { blueGrey500 } from 'material-ui/styles/colors';
-// import { ApplicationState }  from './store';
 
 const muiTheme = getMuiTheme({
   palette: {
@@ -31,10 +30,7 @@ ReactDOM.render(
   (
     <Provider store={store}>
       <MuiThemeProvider muiTheme={muiTheme}>
-        <div>
-          <DepartmentDBsView />
-          <InstitutionsView />
-        </div>
+        <App />
       </MuiThemeProvider>
     </Provider>
   ),

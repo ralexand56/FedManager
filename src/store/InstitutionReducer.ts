@@ -27,7 +27,6 @@ export const actionCreators = {
     requestInstitutions: (deptDBID: number = 1): AppThunkAction<KnownAction> => (dispatch, getState) => {
         let { departmentDBs } = getState();
         let { activeDeptDB } = departmentDBs;
-        console.dir(activeDeptDB);
 
         // let nameFilter = `$filter=startswith(Name, '${searchTxt}')&`;
         let reqTxt = `${baseUrl}Institutions?$filter=DeptDBID eq ${activeDeptDB ? activeDeptDB.DeptDBID : deptDBID}

@@ -2,7 +2,6 @@ import * as React from 'react';
 import { Component } from 'react';
 import Divider from 'material-ui/Divider';
 import Paper from 'material-ui/Paper';
-import Drawer from 'material-ui/Drawer';
 import TextField from 'material-ui/TextField';
 import CircularProgress from 'material-ui/CircularProgress';
 import { ApplicationState } from '../store';
@@ -17,21 +16,25 @@ interface AppState {
 }
 
 const styles = {
-    height: 175,
-    width: 200,
-    margin: 10,
-    textAlign: 'center',
-    display: 'inline-block',
-    cursor: 'pointer',
+    mainContainer: {
+        overFlow: 'visible',
+        backgroundColor: '#CFD8DC', 
+        textAlign: 'center',
+        height: '100vh',
+    },
+    deptView: {
+        height: 175,
+        width: 200,
+        margin: 10,
+        textAlign: 'center',
+        display: 'inline-block',
+        cursor: 'pointer',
+    }
 };
 
-const DepartmentDBView = ({
-                            name = ``,
-                            departmentName = ``,
-                            isActive = false,
-                            pct = 0 }) => {
+const DepartmentDBView = ({ name = ``, departmentName = ``, isActive = false, pct = 0 }) => {
     return (
-        <Paper style={styles} zDepth={1}>
+        <Paper style={styles.deptView} zDepth={1}>
             <h4>{name} | <small>{departmentName}</small> {isActive && 'Active'}</h4>
             <Divider />
             <div>
@@ -49,32 +52,33 @@ export class DepartmentDBListView extends Component<DepartmentDBProps, AppState>
     }
 
     handleSearchTxtChanged(e: React.FormEvent<{}>, newVal: string) {
-        this.setState({ searchTxt: newVal });
+        this.setState({searchTxt: newVal});
 
-        this.props.requestDepartmentDBs(newVal);
+        this.props.requestDepartmentDBs(newVal, this.props.institutionFilter);
     }
 
     componentDidMount() {
-        this.props.requestDepartmentDBs('');
+        this.props.requestDepartmentDBs('', this.props.institutionFilter);
     }
 
     render() {
-        let { departmentDBs, deptDBsLoading, activeDeptDB, selectDeptDB } = this.props;
+        let { departmentDBs, deptDBsLoading, activeDeptDB, setInstitutionFilter } = this.props;
         let { searchTxt } = this.state;
 
         return (
-            <Drawer containerStyle={{ backgroundColor: '#CFD8DC', textAlign: 'center' }} open={true}>
+            <Paper style={styles.mainContainer} open={true}>
                 <h4>Department Databases</h4>
                 <Divider />
-                <TextField style={{ padding: '0px 15px' }}
+                <TextField style={{ padding: '0px 0px' }}
                     value={searchTxt}
                     onChange={(e, newVal) => this.handleSearchTxtChanged(e, newVal)}
                     hintText="search by name..." />
                 {
                     deptDBsLoading ? (<CircularProgress />)
                         : (departmentDBs.map(d => (
-                            <div onClick={() => selectDeptDB(d.DeptDBID)} 
-                                    key={d.DeptDBID}>
+                            <div onClick={
+                                () => setInstitutionFilter({...this.props.institutionFilter, deptDBID: d.DeptDBID})}
+                                key={d.DeptDBID}>
                                 <DepartmentDBView
                                     name={d.Name}
                                     departmentName={d.Department.Name}
@@ -83,7 +87,7 @@ export class DepartmentDBListView extends Component<DepartmentDBProps, AppState>
                             </div>
                         )))
                 }
-            </Drawer>
+            </Paper>
         );
     };
 }

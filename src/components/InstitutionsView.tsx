@@ -4,8 +4,11 @@ import { ApplicationState } from '../store';
 // import Divider from 'material-ui/Divider';
 import CircularProgress from 'material-ui/CircularProgress';
 import * as DepartmentDBStore from '../store/DepartmentDBReducer';
+// import { InstitutionFilter } from './../services/data-types';
 // import LinearProgress from 'material-ui/LinearProgress';
 import Paper from 'material-ui/Paper';
+import TextField from 'material-ui/TextField';
+import Toggle from 'material-ui/Toggle';
 import { connect } from 'react-redux';
 import {
     Table,
@@ -34,13 +37,50 @@ const styles = {
     }
 };
 
+// interface AppState {
+//     institutionFilter: InstitutionFilter;
+// }
+
 export class InstitutionView extends Component<InstitutionsProps, void> {
+    isStartsWith: boolean = true;
     constructor() {
         super();
+
+        // this.state = { institutionFilter: { searchTxt: '', isStartsWith: true } };
+    }
+
+    handleSearchTxtChanged(e: React.FormEvent<{}>, newVal: string) {
+        // this.setState(
+        //     {
+        //         ...this.state,
+        //         institutionFilter: {
+        //             searchTxt: newVal,
+        //             isStartsWith: this.state.institutionFilter.isStartsWith,
+        //         }
+        //     },
+        // );
+
+        this.props.setInstitutionFilter({ ...this.props.institutionFilter, searchTxt: newVal, });
+
+        // this.props.requestInstitutions(this.props.activeDeptDB!.DeptDBID);
+    }
+
+    handleStartsWithToggle(e: React.FormEvent<{}>, isInputChecked: boolean) {
+        // this.setState(
+        //     {
+        //         ...this.state,
+        //         institutionFilter: {
+        //             searchTxt: this.state.institutionFilter.searchTxt,
+        //             isStartsWith: isInputChecked,
+        //         }
+        //     },
+        // );
+        this.props.setInstitutionFilter({ ...this.props.institutionFilter, isStartsWith: isInputChecked, });
     }
 
     public render() {
-        let { activeInstitutions, activeDeptDB, institutionsLoading } = this.props;
+        let { activeInstitutions, institutionsLoading, institutionFilter } = this.props;
+        console.dir(institutionFilter.isStartsWith);
 
         return (
             <Paper style={styles.mainContainer} zDepth={2}>
@@ -52,11 +92,17 @@ export class InstitutionView extends Component<InstitutionsProps, void> {
                         displaySelectAll={false}
                         enableSelectAll={true}>
                         <TableRow>
-                            <TableRowColumn colSpan={5}>
-                                <h3>Institutions |
-                                    <small> {activeDeptDB && activeDeptDB.Name} | {activeInstitutions.length}</small>
-                                </h3>
-                            </TableRowColumn>
+                            <TableHeaderColumn>
+                                <TextField style={{ padding: '0px' }}
+                                    onChange={(e, newVal) => this.handleSearchTxtChanged(e, newVal)}
+                                    hintText="search by name..." />
+                            </TableHeaderColumn>
+                            <TableHeaderColumn>
+                                <Toggle
+                                    onToggle={(e, isInputChecked) => this.handleStartsWithToggle(e, isInputChecked)}
+                                    defaultToggled={true}
+                                    label={institutionFilter.isStartsWith ? 'starts with' : 'contains'} />
+                            </TableHeaderColumn>
                         </TableRow>
                         <TableRow style={{ height: 20 }}>
                             <TableHeaderColumn style={{ height: 20 }}>ID</TableHeaderColumn>
@@ -85,7 +131,7 @@ export class InstitutionView extends Component<InstitutionsProps, void> {
                         ))}
                         {institutionsLoading && (
                             <TableRow>
-                                <TableRowColumn colSpan={5} style={{textAlign: 'center'}}>
+                                <TableRowColumn colSpan={5} style={{ textAlign: 'center' }}>
                                     <CircularProgress style={{ width: '100%' }} mode={'indeterminate'} />
                                 </TableRowColumn>
                             </TableRow>
@@ -97,8 +143,8 @@ export class InstitutionView extends Component<InstitutionsProps, void> {
     }
 
     componentDidMount() {
-        this.props.requestDepartmentDBs('');
-        
+        // this.props.requestDepartmentDBs('');
+
         // this.props.requestInstitutions();
     }
 }
