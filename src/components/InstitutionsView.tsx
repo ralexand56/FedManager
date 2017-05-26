@@ -80,7 +80,6 @@ export class InstitutionView extends Component<InstitutionsProps, void> {
 
     public render() {
         let { activeInstitutions, institutionsLoading, institutionFilter } = this.props;
-        console.dir(institutionFilter.isStartsWith);
 
         return (
             <Paper style={styles.mainContainer} zDepth={2}>
@@ -100,7 +99,6 @@ export class InstitutionView extends Component<InstitutionsProps, void> {
                             <TableHeaderColumn>
                                 <Toggle
                                     onToggle={(e, isInputChecked) => this.handleStartsWithToggle(e, isInputChecked)}
-                                    defaultToggled={true}
                                     label={institutionFilter.isStartsWith ? 'starts with' : 'contains'} />
                             </TableHeaderColumn>
                         </TableRow>

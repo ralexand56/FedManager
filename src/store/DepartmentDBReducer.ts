@@ -63,7 +63,7 @@ const fetchInstitutions = (instFilter: InstitutionFilter) => {
     }
 
     reqTxt += `&$top=100&$expand=FederalInstitution`;
-    console.dir(reqTxt)
+    console.dir(reqTxt);
     return fetch(reqTxt)
         .then(response => response.json());
 };
@@ -171,11 +171,10 @@ export const reducer: Reducer<DepartmentDBState> = (state: DepartmentDBState, ac
             };
 
         case 'SET_INSTITUTION_FILTER':
-            console.dir(action.institutionFilter);
-            
+
             return {
                 ...state,
-                InstitutionFilter: action.institutionFilter,
+                institutionFilter: action.institutionFilter,
             };
 
         // case 'REQUEST_INSTITUTIONS':
