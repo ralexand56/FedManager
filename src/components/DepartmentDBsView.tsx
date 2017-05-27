@@ -18,7 +18,7 @@ interface AppState {
 const styles = {
     mainContainer: {
         overFlow: 'visible',
-        backgroundColor: '#CFD8DC', 
+        backgroundColor: '#CFD8DC',
         textAlign: 'center',
         height: '100vh',
     },
@@ -33,9 +33,22 @@ const styles = {
 };
 
 const DepartmentDBView = ({ name = ``, departmentName = ``, isActive = false, pct = 0 }) => {
+    let localStyle = {
+        height: 175,
+        width: 200,
+        margin: 10,
+        textAlign: 'center',
+        display: 'inline-block',
+        cursor: 'pointer',
+    };
+
+    if (isActive) {
+        localStyle = { ...styles.deptView };
+    }
+
     return (
-        <Paper style={styles.deptView} zDepth={1}>
-            <h4>{name} | <small>{departmentName}</small> {isActive && 'Active'}</h4>
+        <Paper style={localStyle} zDepth={isActive ? 2 : 0}>
+            <h4>{name} | <small>{departmentName}</small></h4>
             <Divider />
             <div>
                 <h2>{pct} <small>%</small></h2>
@@ -52,7 +65,7 @@ export class DepartmentDBListView extends Component<DepartmentDBProps, AppState>
     }
 
     handleSearchTxtChanged(e: React.FormEvent<{}>, newVal: string) {
-        this.setState({searchTxt: newVal});
+        this.setState({ searchTxt: newVal });
 
         this.props.requestDepartmentDBs(newVal, this.props.institutionFilter);
     }
@@ -62,14 +75,14 @@ export class DepartmentDBListView extends Component<DepartmentDBProps, AppState>
     }
 
     render() {
-        let { departmentDBs, deptDBsLoading, activeDeptDB, setInstitutionFilter } = this.props;
+        let { departmentDBs, deptDBsLoading, activeDeptDB, selectDeptDB } = this.props;
         let { searchTxt } = this.state;
 
         return (
             <Paper style={styles.mainContainer} open={true}>
                 <h4>Department Databases</h4>
                 <Divider />
-                <TextField style={{ padding: '0px 0px' }}
+                <TextField style={{ padding: '0px' }}
                     value={searchTxt}
                     onChange={(e, newVal) => this.handleSearchTxtChanged(e, newVal)}
                     hintText="search by name..." />
@@ -77,7 +90,11 @@ export class DepartmentDBListView extends Component<DepartmentDBProps, AppState>
                     deptDBsLoading ? (<CircularProgress />)
                         : (departmentDBs.map(d => (
                             <div onClick={
-                                () => setInstitutionFilter({...this.props.institutionFilter, deptDBID: d.DeptDBID})}
+                                () => selectDeptDB(d.DeptDBID,
+                                                   {
+                                        ...this.props.institutionFilter,
+                                        deptDBID: d.DeptDBID,
+                                    })}
                                 key={d.DeptDBID}>
                                 <DepartmentDBView
                                     name={d.Name}

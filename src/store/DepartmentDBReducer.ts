@@ -1,5 +1,5 @@
 import { AppThunkAction } from './index';
-import { DepartmentDB, Institution, InstitutionFilter } from './../services/data-types';
+import { DepartmentDB, Institution, InstitutionFilter, State } from './../services/data-types';
 import { Reducer } from 'redux';
 
 const baseUrl = `http://dev.informars.com/webservices/FedSvc/odata/`;
@@ -12,6 +12,8 @@ export interface DepartmentDBState {
     searchTxt: string;
     institutionsLoading: boolean;
     institutionFilter: InstitutionFilter;
+    institutionTotalCnt: number;
+    states: Array<State>;
 }
 
 interface RequestDepartmentDBsAction {
@@ -31,6 +33,11 @@ interface SetInstitutionFilter {
     institutionFilter: InstitutionFilter;
 }
 
+interface LoadStates {
+    type: 'LOAD_STATES';
+    states: Array<State>;
+}
+
 // interface RequestInstitutionsAction {
 //     type: 'REQUEST_INSTITUTIONS';
 //     institutionFilter: InstitutionFilter;
@@ -39,13 +46,14 @@ interface SetInstitutionFilter {
 interface ReceiveInstitutionsAction {
     type: 'RECEIVE_INSTITUTIONS';
     activeInstitutions: Array<Institution>;
+    cnt: number;
 };
 
 interface SelectDeptDBAction {
     type: 'SELECT_DEPTDB';
     deptDBID: number;
     institutionFilter: InstitutionFilter;
-}
+};
 
 // interface DepartmentDBSearchChanged {
 //     type: 'DEPARTMENTDB_SEARCH_CHANGED';
@@ -53,7 +61,7 @@ interface SelectDeptDBAction {
 // }
 
 type KnownAction = RequestDepartmentDBsAction | ReceiveDepartmentDBsAction | SetInstitutionFilter
-    | ReceiveInstitutionsAction | SelectDeptDBAction;
+    | ReceiveInstitutionsAction | SelectDeptDBAction | LoadStates;
 
 const fetchInstitutions = (instFilter: InstitutionFilter) => {
     let reqTxt = `${baseUrl}Institutions?$filter=DeptDBID eq ${instFilter.deptDBID}`;
@@ -62,13 +70,25 @@ const fetchInstitutions = (instFilter: InstitutionFilter) => {
         reqTxt += ` and ${instFilter.isStartsWith ? 'startswith' : 'contains'}(Name, '${instFilter.searchTxt}')`;
     }
 
-    reqTxt += `&$top=100&$expand=FederalInstitution`;
-    console.dir(reqTxt);
+    if (instFilter.selectedStates.length) {
+        let statesTxt = instFilter.selectedStates.map(x => `StateCode eq '${x}'`).join(' or ');
+        reqTxt += `and (${statesTxt})`;
+    }
+
+    reqTxt += `&$top=100&$expand=FederalInstitution&$count=true`;
+    // console.dir(reqTxt);
     return fetch(reqTxt)
         .then(response => response.json());
 };
 
 export const actionCreators = {
+    loadStates: ():
+        AppThunkAction<KnownAction> => (dispatch, getState) => {
+            fetch(`${baseUrl}States`)
+                .then(response => response.json())
+                .then(states => dispatch({ type: 'LOAD_STATES', states: states.value }));
+        }
+    ,
     requestDepartmentDBs: (searchTxt: string, instFilter: InstitutionFilter):
         AppThunkAction<KnownAction> => (dispatch, getState) => {
 
@@ -83,9 +103,11 @@ export const actionCreators = {
 
                     fetchInstitutions(instFilter)
                         .then(insts => {
+
                             dispatch({
                                 type: 'RECEIVE_INSTITUTIONS',
                                 activeInstitutions: insts.value, // MultiSort(insts.value, 'Name', 'StateCode'),
+                                cnt: insts['@odata.count'],
                             });
                         });
 
@@ -99,7 +121,11 @@ export const actionCreators = {
         AppThunkAction<KnownAction> => (dispatch, getState) => {
             fetchInstitutions(instFilter)
                 .then(insts => {
-                    dispatch({ type: 'RECEIVE_INSTITUTIONS', activeInstitutions: insts.value });
+                    dispatch({
+                        type: 'RECEIVE_INSTITUTIONS',
+                        activeInstitutions: insts.value,
+                        cnt: insts['@odata.count'],
+                    });
                 });
 
             dispatch({ type: 'SET_INSTITUTION_FILTER', institutionFilter: instFilter });
@@ -127,14 +153,19 @@ export const actionCreators = {
     //         dispatch({ type: 'REQUEST_INSTITUTIONS', deptDBID: deptDBID });
     //     },
 
-    // selectDeptDB: (deptDBID: number): AppThunkAction<KnownAction> => (dispatch, getState) => {
-    //     fetchInstitutions(deptDBID)
-    //         .then(insts => {
-    //             dispatch({ type: 'RECEIVE_INSTITUTIONS', activeInstitutions: insts.value });
-    //         });
+    selectDeptDB: (deptDBID: number, instFilter: InstitutionFilter):
+        AppThunkAction<KnownAction> => (dispatch, getState) => {
+            fetchInstitutions(instFilter)
+                .then(insts => {
+                    dispatch({
+                        type: 'RECEIVE_INSTITUTIONS',
+                        activeInstitutions: insts.value, // MultiSort(insts.value, 'Name', 'StateCode'),
+                        cnt: insts['@odata.count'],
+                    });
+                });
 
-    //     dispatch({ type: 'SELECT_DEPTDB', deptDBID: deptDBID });
-    // },
+            dispatch({ type: 'SELECT_DEPTDB', deptDBID: deptDBID, institutionFilter: instFilter });
+        },
 };
 
 const unloadedState: DepartmentDBState = {
@@ -147,8 +178,11 @@ const unloadedState: DepartmentDBState = {
         deptDBID: 0,
         searchTxt: '',
         isStartsWith: true,
+        selectedStates: [],
     },
+    institutionTotalCnt: 0,
     searchTxt: '',
+    states: [],
 };
 
 export const reducer: Reducer<DepartmentDBState> = (state: DepartmentDBState, action: KnownAction) => {
@@ -177,6 +211,13 @@ export const reducer: Reducer<DepartmentDBState> = (state: DepartmentDBState, ac
                 institutionFilter: action.institutionFilter,
             };
 
+        case 'LOAD_STATES':
+
+            return {
+                ...state,
+                states: action.states,
+            };
+
         // case 'REQUEST_INSTITUTIONS':
 
         //     return {
@@ -190,6 +231,7 @@ export const reducer: Reducer<DepartmentDBState> = (state: DepartmentDBState, ac
             return {
                 ...state,
                 activeInstitutions: action.activeInstitutions,
+                institutionTotalCnt: action.cnt,
                 institutionsLoading: false,
             };
 

@@ -74,6 +74,13 @@ export interface InstitutionFilter {
     deptDBID: number;
     searchTxt: string;
     isStartsWith: boolean;
+    selectedStates: Array<string>;
+}
+
+export interface State {
+    IsActive: boolean;
+    Name: string;
+    StateCode: string;
 }
 
 export function MultiSort(...args: Array<any>) {

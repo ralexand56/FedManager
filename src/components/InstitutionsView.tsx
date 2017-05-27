@@ -6,7 +6,9 @@ import CircularProgress from 'material-ui/CircularProgress';
 import * as DepartmentDBStore from '../store/DepartmentDBReducer';
 // import { InstitutionFilter } from './../services/data-types';
 // import LinearProgress from 'material-ui/LinearProgress';
+import MenuItem from 'material-ui/MenuItem';
 import Paper from 'material-ui/Paper';
+import SelectField from 'material-ui/SelectField';
 import TextField from 'material-ui/TextField';
 import Toggle from 'material-ui/Toggle';
 import { connect } from 'react-redux';
@@ -37,49 +39,42 @@ const styles = {
     }
 };
 
-// interface AppState {
-//     institutionFilter: InstitutionFilter;
-// }
+interface AppState {
+    selectedState: Array<string> | string | null;
+}
 
-export class InstitutionView extends Component<InstitutionsProps, void> {
+export class InstitutionView extends Component<InstitutionsProps, AppState> {
     isStartsWith: boolean = true;
     constructor() {
         super();
 
-        // this.state = { institutionFilter: { searchTxt: '', isStartsWith: true } };
+        this.state = { selectedState: null };
+    }
+
+    handleSelectedStateChanged = (
+        evt: React.FormEvent<{}>,
+        index: number,
+        value: Array<string>) => {
+        this.setState({ selectedState: value });
+        this.props.setInstitutionFilter({...this.props.institutionFilter, selectedStates: value});
     }
 
     handleSearchTxtChanged(e: React.FormEvent<{}>, newVal: string) {
-        // this.setState(
-        //     {
-        //         ...this.state,
-        //         institutionFilter: {
-        //             searchTxt: newVal,
-        //             isStartsWith: this.state.institutionFilter.isStartsWith,
-        //         }
-        //     },
-        // );
-
         this.props.setInstitutionFilter({ ...this.props.institutionFilter, searchTxt: newVal, });
-
-        // this.props.requestInstitutions(this.props.activeDeptDB!.DeptDBID);
     }
 
     handleStartsWithToggle(e: React.FormEvent<{}>, isInputChecked: boolean) {
-        // this.setState(
-        //     {
-        //         ...this.state,
-        //         institutionFilter: {
-        //             searchTxt: this.state.institutionFilter.searchTxt,
-        //             isStartsWith: isInputChecked,
-        //         }
-        //     },
-        // );
         this.props.setInstitutionFilter({ ...this.props.institutionFilter, isStartsWith: isInputChecked, });
     }
 
     public render() {
-        let { activeInstitutions, institutionsLoading, institutionFilter } = this.props;
+        let {
+            activeInstitutions,
+            institutionsLoading,
+            institutionFilter,
+            institutionTotalCnt,
+            states,
+         } = this.props;
 
         return (
             <Paper style={styles.mainContainer} zDepth={2}>
@@ -92,14 +87,35 @@ export class InstitutionView extends Component<InstitutionsProps, void> {
                         enableSelectAll={true}>
                         <TableRow>
                             <TableHeaderColumn>
+                                <span style={{ margin: '0 10px' }}>Count: {institutionTotalCnt}</span>
                                 <TextField style={{ padding: '0px' }}
                                     onChange={(e, newVal) => this.handleSearchTxtChanged(e, newVal)}
                                     hintText="search by name..." />
                             </TableHeaderColumn>
                             <TableHeaderColumn>
                                 <Toggle
+                                    style={{ width: 70 }}
+                                    defaultToggled={true}
                                     onToggle={(e, isInputChecked) => this.handleStartsWithToggle(e, isInputChecked)}
                                     label={institutionFilter.isStartsWith ? 'starts with' : 'contains'} />
+                            </TableHeaderColumn>
+                            <TableHeaderColumn>
+                                <SelectField
+                                    value={this.state.selectedState}
+                                    style={{fontSize: 13}}
+                                    multiple={true}
+                                    onChange={this.handleSelectedStateChanged}>
+                                    <MenuItem
+                                        value={null}
+                                        primaryText="Select State" />
+                                    {
+                                        states.map(st =>
+                                            (
+                                                <MenuItem key={st.StateCode}
+                                                    value={st.StateCode}
+                                                    primaryText={st.Name} />)
+                                        )}
+                                </SelectField>
                             </TableHeaderColumn>
                         </TableRow>
                         <TableRow style={{ height: 20 }}>
@@ -141,9 +157,7 @@ export class InstitutionView extends Component<InstitutionsProps, void> {
     }
 
     componentDidMount() {
-        // this.props.requestDepartmentDBs('');
-
-        // this.props.requestInstitutions();
+        this.props.loadStates();
     }
 }
 
