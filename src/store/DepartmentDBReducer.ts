@@ -1,4 +1,4 @@
-import { AppThunkAction } from './index';
+import { AppThunkAction, ApplicationState } from './index';
 import { DepartmentDB, Institution, InstitutionFilter, State } from './../services/data-types';
 import { Reducer } from 'redux';
 
@@ -33,15 +33,14 @@ interface SetInstitutionFilter {
     institutionFilter: InstitutionFilter;
 }
 
-interface LoadStates {
+interface LoadStatesAction {
     type: 'LOAD_STATES';
     states: Array<State>;
 }
 
-// interface RequestInstitutionsAction {
-//     type: 'REQUEST_INSTITUTIONS';
-//     institutionFilter: InstitutionFilter;
-// };
+interface RequestInstitutionsAction {
+    type: 'REQUEST_INSTITUTIONS';
+};
 
 interface ReceiveInstitutionsAction {
     type: 'RECEIVE_INSTITUTIONS';
@@ -61,36 +60,47 @@ interface SelectDeptDBAction {
 // }
 
 type KnownAction = RequestDepartmentDBsAction | ReceiveDepartmentDBsAction | SetInstitutionFilter
-    | ReceiveInstitutionsAction | SelectDeptDBAction | LoadStates;
+    | ReceiveInstitutionsAction | RequestInstitutionsAction
+    | SelectDeptDBAction | LoadStatesAction;
 
-const fetchInstitutions = (instFilter: InstitutionFilter) => {
-    let reqTxt = `${baseUrl}Institutions?$filter=DeptDBID eq ${instFilter.deptDBID}`;
+const fetchInstitutions =
+    (dispatch: (action: KnownAction) => void, instFilter: InstitutionFilter) => {
 
-    if (instFilter.searchTxt) {
-        reqTxt += ` and ${instFilter.isStartsWith ? 'startswith' : 'contains'}(Name, '${instFilter.searchTxt}')`;
-    }
+        dispatch({ type: 'REQUEST_INSTITUTIONS' });
 
-    if (instFilter.selectedStates.length) {
-        let statesTxt = instFilter.selectedStates.map(x => `StateCode eq '${x}'`).join(' or ');
-        reqTxt += `and (${statesTxt})`;
-    }
+        let reqTxt = `${baseUrl}Institutions?$filter=DeptDBID eq ${instFilter.deptDBID}`;
 
-    reqTxt += `&$top=100&$expand=FederalInstitution&$count=true`;
-    // console.dir(reqTxt);
-    return fetch(reqTxt)
-        .then(response => response.json());
-};
+        if (instFilter.searchTxt) {
+            reqTxt += ` and ${instFilter.isStartsWith ? 'startswith' : 'contains'}(Name, '${instFilter.searchTxt}')`;
+        }
+
+        if (instFilter.selectedStates !== null && instFilter.selectedStates.length) {
+            let statesTxt = instFilter.selectedStates.map(x => `StateCode eq '${x}'`).join(' or ');
+            reqTxt += `and (${statesTxt})`;
+        }
+
+        reqTxt += `&$top=20&$expand=FederalInstitution&$count=true`;
+        // console.dir(reqTxt);
+        fetch(reqTxt)
+            .then(response => response.json())
+            .then(insts =>
+                dispatch({
+                    type: 'RECEIVE_INSTITUTIONS',
+                    activeInstitutions: insts.value, // MultiSort(insts.value, 'Name', 'StateCode'),
+                    cnt: insts['@odata.count'],
+                }));
+    };
 
 export const actionCreators = {
     loadStates: ():
-        AppThunkAction<KnownAction> => (dispatch, getState) => {
+        AppThunkAction<KnownAction> => (dispatch: (action: KnownAction) => void, getState: () => ApplicationState) => {
             fetch(`${baseUrl}States`)
                 .then(response => response.json())
                 .then(states => dispatch({ type: 'LOAD_STATES', states: states.value }));
         }
     ,
     requestDepartmentDBs: (searchTxt: string, instFilter: InstitutionFilter):
-        AppThunkAction<KnownAction> => (dispatch, getState) => {
+        AppThunkAction<KnownAction> => (dispatch: (action: KnownAction) => void, getState: () => ApplicationState) => {
 
             let nameFilter = `$filter=startswith(Name, '${searchTxt}')&`;
             let reqTxt = `${baseUrl}DepartmentDBs?${searchTxt && nameFilter}$expand=Department`;
@@ -101,15 +111,7 @@ export const actionCreators = {
                     let deptDBID: number = depts.value[0].DeptDBID;
                     instFilter.deptDBID = deptDBID;
 
-                    fetchInstitutions(instFilter)
-                        .then(insts => {
-
-                            dispatch({
-                                type: 'RECEIVE_INSTITUTIONS',
-                                activeInstitutions: insts.value, // MultiSort(insts.value, 'Name', 'StateCode'),
-                                cnt: insts['@odata.count'],
-                            });
-                        });
+                    fetchInstitutions(dispatch, instFilter);
 
                     dispatch({ type: 'RECEIVE_DEPARTMENTDBS', searchTxt: searchTxt, departmentDBs: depts.value });
                 });
@@ -118,15 +120,8 @@ export const actionCreators = {
         },
 
     setInstitutionFilter: (instFilter: InstitutionFilter):
-        AppThunkAction<KnownAction> => (dispatch, getState) => {
-            fetchInstitutions(instFilter)
-                .then(insts => {
-                    dispatch({
-                        type: 'RECEIVE_INSTITUTIONS',
-                        activeInstitutions: insts.value,
-                        cnt: insts['@odata.count'],
-                    });
-                });
+        AppThunkAction<KnownAction> => (dispatch: (action: KnownAction) => void, getState: () => ApplicationState) => {
+            fetchInstitutions(dispatch, instFilter);
 
             dispatch({ type: 'SET_INSTITUTION_FILTER', institutionFilter: instFilter });
         },
@@ -155,14 +150,7 @@ export const actionCreators = {
 
     selectDeptDB: (deptDBID: number, instFilter: InstitutionFilter):
         AppThunkAction<KnownAction> => (dispatch, getState) => {
-            fetchInstitutions(instFilter)
-                .then(insts => {
-                    dispatch({
-                        type: 'RECEIVE_INSTITUTIONS',
-                        activeInstitutions: insts.value, // MultiSort(insts.value, 'Name', 'StateCode'),
-                        cnt: insts['@odata.count'],
-                    });
-                });
+            fetchInstitutions(dispatch, instFilter);
 
             dispatch({ type: 'SELECT_DEPTDB', deptDBID: deptDBID, institutionFilter: instFilter });
         },
@@ -218,14 +206,13 @@ export const reducer: Reducer<DepartmentDBState> = (state: DepartmentDBState, ac
                 states: action.states,
             };
 
-        // case 'REQUEST_INSTITUTIONS':
+        case 'REQUEST_INSTITUTIONS':
 
-        //     return {
-        //         ...state,
-        //         activeInstitutions: [],
-        //         institutionsLoading: true,
-        //         institutionFilter: action.F
-        //     };
+            return {
+                ...state,
+                activeInstitutions: [],
+                institutionsLoading: true,
+            };
 
         case 'RECEIVE_INSTITUTIONS':
             return {

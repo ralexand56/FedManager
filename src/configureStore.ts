@@ -2,6 +2,7 @@ import { createStore, applyMiddleware, combineReducers, ReducersMapObject } from
 import { composeWithDevTools } from 'redux-devtools-extension';
 import * as Redux from 'redux';
 import thunk from 'redux-thunk';
+import promiseMiddleware from 'redux-promise-middleware';
 import { logger } from 'redux-logger';
 import * as Store from './store';
 
@@ -11,7 +12,7 @@ export default function configureStore(initialState?: Store.ApplicationState) {
     // If devTools is installed, connect to it
     // const devToolsExtension = windowIfDefined && windowIfDefined.devToolsExtension as () => GenericStoreEnhancer;
     const createStoreWithMiddleware = composeWithDevTools(
-        applyMiddleware(logger, thunk),
+        applyMiddleware(logger, thunk, promiseMiddleware()),
     )(createStore);
 
     // Combine all reducers and instantiate the app-wide store instance
@@ -19,7 +20,7 @@ export default function configureStore(initialState?: Store.ApplicationState) {
     const store = createStoreWithMiddleware(allReducers, initialState,
     ) as Redux.Store<Store.ApplicationState>;
 
-    // Enable Webpack hot module replacement for reducers
+    // // Enable Webpack hot module replacement for reducers
     // if (module.hot) {
     //     module.hot.accept('./store', () => {
     //         const nextRootReducer = require<typeof Store>('./store');

@@ -16,6 +16,7 @@
     "@types/material-ui": "^0.17.6",
     "@types/react-tap-event-plugin": "0.0.30",
     "@types/redux-logger": "^3.0.0",
+    "@types/redux-promise-middleware": "0.0.6",
     "material-ui": "^0.18.0",
     "multisort": "^0.5.3",
     "rc-banner-anim": "^0.5.12",
@@ -24,6 +25,8 @@
     "redux": "^3.6.0",
     "redux-devtools-extension": "^2.13.2",
     "redux-logger": "^3.0.6",
+    "redux-promise-middleware": "^4.3.0",
+    "redux-promise-thunk": "^0.1.5",
     "redux-thunk": "^2.2.0",
     "reselect": "^3.0.1",
     "thenby": "^1.2.3"

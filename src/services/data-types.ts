@@ -74,7 +74,7 @@ export interface InstitutionFilter {
     deptDBID: number;
     searchTxt: string;
     isStartsWith: boolean;
-    selectedStates: Array<string>;
+    selectedStates: Array<string> | null;
 }
 
 export interface State {

@@ -40,22 +40,24 @@ const styles = {
 };
 
 interface AppState {
-    selectedState: Array<string> | string | null;
+    selectedState: Array<string> | null;
 }
 
+@connect()
 export class InstitutionView extends Component<InstitutionsProps, AppState> {
     isStartsWith: boolean = true;
     constructor() {
         super();
 
-        this.state = { selectedState: null };
+        this.state = { selectedState: [] };
     }
 
     handleSelectedStateChanged = (
         evt: React.FormEvent<{}>,
         index: number,
-        value: Array<string>) => {
+        value: Array<string> | null) => {
         this.setState({ selectedState: value });
+
         this.props.setInstitutionFilter({...this.props.institutionFilter, selectedStates: value});
     }
 
@@ -106,7 +108,7 @@ export class InstitutionView extends Component<InstitutionsProps, AppState> {
                                     multiple={true}
                                     onChange={this.handleSelectedStateChanged}>
                                     <MenuItem
-                                        value={null}
+                                        value={[]}
                                         primaryText="Select State" />
                                     {
                                         states.map(st =>
