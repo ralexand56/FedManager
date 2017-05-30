@@ -54,13 +54,13 @@ interface SelectDeptDBAction {
     institutionFilter: InstitutionFilter;
 };
 
-// interface DepartmentDBSearchChanged {
-//     type: 'DEPARTMENTDB_SEARCH_CHANGED';
-//     searchTxt: string;
-// }
+interface ToggleSelectionAction {
+    type: 'TOGGLE_SELECTION';
+    id: string;
+}
 
 type KnownAction = RequestDepartmentDBsAction | ReceiveDepartmentDBsAction | SetInstitutionFilter
-    | ReceiveInstitutionsAction | RequestInstitutionsAction
+    | ReceiveInstitutionsAction | RequestInstitutionsAction | ToggleSelectionAction
     | SelectDeptDBAction | LoadStatesAction;
 
 const fetchInstitutions =
@@ -71,7 +71,9 @@ const fetchInstitutions =
         let reqTxt = `${baseUrl}Institutions?$filter=DeptDBID eq ${instFilter.deptDBID}`;
 
         if (instFilter.searchTxt) {
-            reqTxt += ` and ${instFilter.isStartsWith ? 'startswith' : 'contains'}(Name, '${instFilter.searchTxt}')`;
+            let encodedTxt = encodeURIComponent(instFilter.searchTxt);
+
+            reqTxt += ` and ${instFilter.isStartsWith ? 'startswith' : 'contains'}(Name, '${encodedTxt}')`;
         }
 
         if (instFilter.selectedStates !== null && instFilter.selectedStates.length) {
@@ -79,16 +81,25 @@ const fetchInstitutions =
             reqTxt += `and (${statesTxt})`;
         }
 
-        reqTxt += `&$top=20&$expand=FederalInstitution&$count=true`;
+        reqTxt += `&$top=60&$expand=FederalInstitution&$orderby=Name,StateCode&$count=true`;
         // console.dir(reqTxt);
         fetch(reqTxt)
             .then(response => response.json())
-            .then(insts =>
+            .then(insts => {
+                let institutions: Array<Institution> = insts.value;
+
+                institutions.forEach((i: Institution) => {
+                    i.IsSelected = false;
+                });
+
                 dispatch({
                     type: 'RECEIVE_INSTITUTIONS',
-                    activeInstitutions: insts.value, // MultiSort(insts.value, 'Name', 'StateCode'),
+                    activeInstitutions: institutions,
                     cnt: insts['@odata.count'],
-                }));
+                });
+            }
+            );
+
     };
 
 export const actionCreators = {
@@ -126,34 +137,16 @@ export const actionCreators = {
             dispatch({ type: 'SET_INSTITUTION_FILTER', institutionFilter: instFilter });
         },
 
-    // requestInstitutions: (deptDBID: number = 0):
-    //     AppThunkAction<KnownAction> => (dispatch, getState) => {
-    //         let { institutionFilter } = getState().departmentDBs;
-    //         console.dir(institutionFilter);
-    //         // let nameFilter = `$filter=startswith(Name, '${searchTxt}')&`;
-    //         let reqTxt = `${baseUrl}Institutions?$filter=DeptDBID eq ${deptDBID}`;
-
-    //         if (institutionFilter.searchTxt) {
-    //             reqTxt += ` and startswith(Name, '${institutionFilter.searchTxt}')`;
-    //         }
-
-    //         reqTxt += `&$top=100&$expand=FederalInstitution`;
-
-    //         fetch(reqTxt)
-    //             .then(response => response.json())
-    //             .then(data => {
-    //                 dispatch({ type: 'RECEIVE_INSTITUTIONS', activeInstitutions: data.value });
-    //             });
-
-    //         dispatch({ type: 'REQUEST_INSTITUTIONS', deptDBID: deptDBID });
-    //     },
-
     selectDeptDB: (deptDBID: number, instFilter: InstitutionFilter):
         AppThunkAction<KnownAction> => (dispatch, getState) => {
             fetchInstitutions(dispatch, instFilter);
 
             dispatch({ type: 'SELECT_DEPTDB', deptDBID: deptDBID, institutionFilter: instFilter });
         },
+
+    toggleSelection: (id: string) => (dispatch: (action: KnownAction) => void, getState: () => ApplicationState) => {
+        dispatch({ type: 'TOGGLE_SELECTION', id: id });
+    }
 };
 
 const unloadedState: DepartmentDBState = {
@@ -215,6 +208,7 @@ export const reducer: Reducer<DepartmentDBState> = (state: DepartmentDBState, ac
             };
 
         case 'RECEIVE_INSTITUTIONS':
+
             return {
                 ...state,
                 activeInstitutions: action.activeInstitutions,
@@ -230,6 +224,14 @@ export const reducer: Reducer<DepartmentDBState> = (state: DepartmentDBState, ac
             return {
                 ...state,
                 activeDeptDB: activeDB,
+            };
+
+        case 'TOGGLE_SELECTION':
+            let targetInst = state.activeInstitutions.filter(i => i.CustomID === action.id)[0];
+            targetInst.IsSelected = !targetInst.IsSelected;
+
+            return {
+                ...state,
             };
 
         default:

@@ -58,7 +58,12 @@ export class InstitutionView extends Component<InstitutionsProps, AppState> {
         value: Array<string> | null) => {
         this.setState({ selectedState: value });
 
-        this.props.setInstitutionFilter({...this.props.institutionFilter, selectedStates: value});
+        this.props.setInstitutionFilter({ ...this.props.institutionFilter, selectedStates: value });
+    }
+
+    handleToggleSelection(rows: Array<number> | string) {
+        console.dir(rows);
+        // this.props.toggleSelection(id);
     }
 
     handleSearchTxtChanged(e: React.FormEvent<{}>, newVal: string) {
@@ -81,6 +86,7 @@ export class InstitutionView extends Component<InstitutionsProps, AppState> {
         return (
             <Paper style={styles.mainContainer} zDepth={2}>
                 <Table
+                onRowSelection={(e) => this.handleToggleSelection(e)}
                     fixedHeader={true}
                     selectable={true}
                     multiSelectable={true}>
@@ -104,7 +110,7 @@ export class InstitutionView extends Component<InstitutionsProps, AppState> {
                             <TableHeaderColumn>
                                 <SelectField
                                     value={this.state.selectedState}
-                                    style={{fontSize: 13}}
+                                    style={{ fontSize: 13 }}
                                     multiple={true}
                                     onChange={this.handleSelectedStateChanged}>
                                     <MenuItem
@@ -134,7 +140,9 @@ export class InstitutionView extends Component<InstitutionsProps, AppState> {
                         stripedRows={true}
                         showRowHover={false}>
                         {activeInstitutions && (activeInstitutions.map(i => (
-                            <TableRow className="row" style={{ height: 20 }} key={i.CustomID}>
+                            <TableRow className="row"
+                                style={{ height: 20 }}
+                                key={i.CustomID}>
                                 <TableRowColumn style={{ height: 20 }} >{i.CustomID}</TableRowColumn>
                                 <TableRowColumn style={{ height: 20 }} >{i.Name}</TableRowColumn>
                                 <TableRowColumn style={{ height: 20 }} >{i.StateCode}</TableRowColumn>

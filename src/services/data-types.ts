@@ -31,6 +31,7 @@ export interface Institution {
     HCID: number;
     DeptDBID: number;
     FederalInstitution: FederalInstitution;
+    IsSelected: boolean;
 }
 
 export interface FederalInstitution {
