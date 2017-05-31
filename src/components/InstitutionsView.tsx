@@ -61,9 +61,8 @@ export class InstitutionView extends Component<InstitutionsProps, AppState> {
         this.props.setInstitutionFilter({ ...this.props.institutionFilter, selectedStates: value });
     }
 
-    handleToggleSelection(rows: Array<number> | string) {
-        console.dir(rows);
-        // this.props.toggleSelection(id);
+    handleToggleSelection(rows: number[] | string) {
+        this.props.updateInstitutionSelection(rows);
     }
 
     handleSearchTxtChanged(e: React.FormEvent<{}>, newVal: string) {
@@ -80,13 +79,20 @@ export class InstitutionView extends Component<InstitutionsProps, AppState> {
             institutionsLoading,
             institutionFilter,
             institutionTotalCnt,
+            selectedInstitutionIndices,
             states,
          } = this.props;
+
+        let arr: number[] = [];
+
+        if (typeof (selectedInstitutionIndices) !== 'string') {
+            arr = selectedInstitutionIndices;
+        }
 
         return (
             <Paper style={styles.mainContainer} zDepth={2}>
                 <Table
-                onRowSelection={(e) => this.handleToggleSelection(e)}
+                    onRowSelection={(e) => this.handleToggleSelection(e)}
                     fixedHeader={true}
                     selectable={true}
                     multiSelectable={true}>
@@ -125,6 +131,9 @@ export class InstitutionView extends Component<InstitutionsProps, AppState> {
                                         )}
                                 </SelectField>
                             </TableHeaderColumn>
+                            <TableHeaderColumn>
+                               Selection: {selectedInstitutionIndices.length}
+                            </TableHeaderColumn>
                         </TableRow>
                         <TableRow style={{ height: 20 }}>
                             <TableHeaderColumn style={{ height: 20 }}>ID</TableHeaderColumn>
@@ -139,8 +148,9 @@ export class InstitutionView extends Component<InstitutionsProps, AppState> {
                         displayRowCheckbox={false}
                         stripedRows={true}
                         showRowHover={false}>
-                        {activeInstitutions && (activeInstitutions.map(i => (
+                        {activeInstitutions && (activeInstitutions.map((i, ind) => (
                             <TableRow className="row"
+                                selected={arr.indexOf(ind) !== -1}
                                 style={{ height: 20 }}
                                 key={i.CustomID}>
                                 <TableRowColumn style={{ height: 20 }} >{i.CustomID}</TableRowColumn>

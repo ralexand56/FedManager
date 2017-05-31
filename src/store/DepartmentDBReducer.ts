@@ -9,10 +9,11 @@ export interface DepartmentDBState {
     activeInstitutions: Array<Institution>;
     departmentDBs: Array<DepartmentDB>;
     deptDBsLoading: boolean;
-    searchTxt: string;
     institutionsLoading: boolean;
     institutionFilter: InstitutionFilter;
     institutionTotalCnt: number;
+    searchTxt: string;
+    selectedInstitutionIndices: Array<number> | string;
     states: Array<State>;
 }
 
@@ -54,13 +55,13 @@ interface SelectDeptDBAction {
     institutionFilter: InstitutionFilter;
 };
 
-interface ToggleSelectionAction {
-    type: 'TOGGLE_SELECTION';
-    id: string;
+interface UpdateInstitutionSelection {
+    type: 'UPDATE_INSTITUTION_SELECTION';
+    indices: string | Array<number>;
 }
 
 type KnownAction = RequestDepartmentDBsAction | ReceiveDepartmentDBsAction | SetInstitutionFilter
-    | ReceiveInstitutionsAction | RequestInstitutionsAction | ToggleSelectionAction
+    | ReceiveInstitutionsAction | RequestInstitutionsAction | UpdateInstitutionSelection
     | SelectDeptDBAction | LoadStatesAction;
 
 const fetchInstitutions =
@@ -108,8 +109,8 @@ export const actionCreators = {
             fetch(`${baseUrl}States`)
                 .then(response => response.json())
                 .then(states => dispatch({ type: 'LOAD_STATES', states: states.value }));
-        }
-    ,
+        },
+
     requestDepartmentDBs: (searchTxt: string, instFilter: InstitutionFilter):
         AppThunkAction<KnownAction> => (dispatch: (action: KnownAction) => void, getState: () => ApplicationState) => {
 
@@ -144,9 +145,11 @@ export const actionCreators = {
             dispatch({ type: 'SELECT_DEPTDB', deptDBID: deptDBID, institutionFilter: instFilter });
         },
 
-    toggleSelection: (id: string) => (dispatch: (action: KnownAction) => void, getState: () => ApplicationState) => {
-        dispatch({ type: 'TOGGLE_SELECTION', id: id });
-    }
+    updateInstitutionSelection: (indices: string | number[]) => {
+        return <UpdateInstitutionSelection> {
+            type: 'UPDATE_INSTITUTION_SELECTION', indices: indices
+        };
+    },
 };
 
 const unloadedState: DepartmentDBState = {
@@ -163,6 +166,7 @@ const unloadedState: DepartmentDBState = {
     },
     institutionTotalCnt: 0,
     searchTxt: '',
+    selectedInstitutionIndices: [],
     states: [],
 };
 
@@ -226,12 +230,11 @@ export const reducer: Reducer<DepartmentDBState> = (state: DepartmentDBState, ac
                 activeDeptDB: activeDB,
             };
 
-        case 'TOGGLE_SELECTION':
-            let targetInst = state.activeInstitutions.filter(i => i.CustomID === action.id)[0];
-            targetInst.IsSelected = !targetInst.IsSelected;
+        case 'UPDATE_INSTITUTION_SELECTION':
 
             return {
                 ...state,
+                selectedInstitutionIndices: action.indices,
             };
 
         default:

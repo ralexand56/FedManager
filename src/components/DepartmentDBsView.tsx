@@ -24,8 +24,8 @@ const styles = {
     },
     deptView: {
         height: 175,
-        width: 200,
-        margin: 10,
+        width: 250,
+        margin: '10px 0px 10px 10px',
         textAlign: 'center',
         display: 'inline-block',
         cursor: 'pointer',
@@ -36,7 +36,7 @@ const DepartmentDBView = ({ name = ``, departmentName = ``, isActive = false, pc
     let localStyle = {
         height: 175,
         width: 200,
-        margin: 10,
+        margin: '10px',
         textAlign: 'center',
         display: 'inline-block',
         cursor: 'pointer',
