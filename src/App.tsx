@@ -4,8 +4,10 @@ import { Component } from 'react';
 import AppBar from 'material-ui/AppBar';
 import DepartmentDBsView from './components/DepartmentDBsView';
 import InstitutionsView from './components/InstitutionsView';
+import * as Radium from 'radium';
+import FederalInstitutionsView from './components/FederalInstitutionsView';
 // import MenuItem from 'material-ui/MenuItem';
-import Divider from 'material-ui/Divider';
+// import Divider from 'material-ui/Divider';
 import RaisedButton from 'material-ui/RaisedButton';
 import './App.css';
 
@@ -19,7 +21,6 @@ const styles = {
     height: '100%',
   } as React.CSSProperties,
   bodyContainer: {
-    display: 'flex',
     height: '100%',
   } as React.CSSProperties,
   bodyTopContainer: {
@@ -36,6 +37,7 @@ interface AppState {
   open: boolean;
 }
 
+@Radium
 export default class App extends Component<{}, AppState> {
   baseUrl = `http://dev.informars.com/webservices/FedSvc/odata/`;
 
@@ -49,40 +51,22 @@ export default class App extends Component<{}, AppState> {
 
   handleToggle = () => this.setState({ open: !this.state.open });
 
-  // handleSelectDepartmentDB(d: DepartmentDB) {
-  //   // this.setState(
-  //   //   {
-  //   //     ...this.state,
-  //   //     activeDepartmentDB: d,
-  //   //   }
-  //   // );
-
-  //   fetch(`${this.baseUrl}Institutions?$filter=DeptDBID eq ${d.DeptDBID}&$expand=FederalInstitution&$top=500`)
-  //     .then(response => response.json())
-  //     .then(x => {
-  //       // this.setState({
-  //       //   ...this.state,
-  //       //   institutions: x.value
-  //       // });
-  //     });
-  // }
-
   render() {
-    // let { activeDepartmentDB } = this.state;
 
     return (
       <div style={{ fontFamily: 'Roboto', height: '100%' }}>
-        <AppBar title="Federal Institution Manager">
+        <AppBar showMenuIconButton={false} 
+                title="Federal Institution Manager">
           <RaisedButton
             label="Department Databases"
             onTouchTap={this.handleToggle}
           />
         </AppBar>
         <div style={styles.mainContainer}>
+          <DepartmentDBsView />
           <div style={styles.bodyContainer}>
-            <DepartmentDBsView />
             <InstitutionsView />
-            <Divider />
+            <FederalInstitutionsView />
           </div>
         </div>
       </div>

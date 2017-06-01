@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { Component } from 'react';
 import { ApplicationState } from '../store';
+import AppBar from 'material-ui/AppBar';
 // import Divider from 'material-ui/Divider';
 import CircularProgress from 'material-ui/CircularProgress';
 import * as DepartmentDBStore from '../store/DepartmentDBReducer';
@@ -8,6 +9,7 @@ import * as DepartmentDBStore from '../store/DepartmentDBReducer';
 // import LinearProgress from 'material-ui/LinearProgress';
 import MenuItem from 'material-ui/MenuItem';
 import Paper from 'material-ui/Paper';
+import * as Radium from 'radium';
 import SelectField from 'material-ui/SelectField';
 import TextField from 'material-ui/TextField';
 import Toggle from 'material-ui/Toggle';
@@ -26,12 +28,10 @@ type InstitutionsProps = DepartmentDBStore.DepartmentDBState &
 
 const styles = {
     mainContainer: {
-        alignText: 'center',
-        display: 'flex',
-        justifyContent: 'center',
-        alignContent: 'center',
+        height: '60%',
+        flow: 1,
         backgroundColor: 'white',
-        height: '100%',
+        margin: 20,
         overflow: 'auto',
     } as React.CSSProperties,
     loader: {
@@ -44,6 +44,7 @@ interface AppState {
 }
 
 @connect()
+@Radium
 export class InstitutionView extends Component<InstitutionsProps, AppState> {
     isStartsWith: boolean = true;
     constructor() {
@@ -75,6 +76,7 @@ export class InstitutionView extends Component<InstitutionsProps, AppState> {
 
     public render() {
         let {
+            activeDeptDB,
             activeInstitutions,
             institutionsLoading,
             institutionFilter,
@@ -91,6 +93,13 @@ export class InstitutionView extends Component<InstitutionsProps, AppState> {
 
         return (
             <Paper style={styles.mainContainer} zDepth={2}>
+                <AppBar
+                    titleStyle={{ fontSize: 20 }}
+                    showMenuIconButton={false}
+                    title={activeDeptDB && (
+                            <span>{activeDeptDB!.Name}
+                            <small> | Count: {institutionTotalCnt}</small></span>
+                            )} />
                 <Table
                     onRowSelection={(e) => this.handleToggleSelection(e)}
                     fixedHeader={true}
@@ -101,7 +110,6 @@ export class InstitutionView extends Component<InstitutionsProps, AppState> {
                         enableSelectAll={true}>
                         <TableRow>
                             <TableHeaderColumn>
-                                <span style={{ margin: '0 10px' }}>Count: {institutionTotalCnt}</span>
                                 <TextField style={{ padding: '0px' }}
                                     onChange={(e, newVal) => this.handleSearchTxtChanged(e, newVal)}
                                     hintText="search by name..." />
@@ -132,7 +140,7 @@ export class InstitutionView extends Component<InstitutionsProps, AppState> {
                                 </SelectField>
                             </TableHeaderColumn>
                             <TableHeaderColumn>
-                               Selection: {selectedInstitutionIndices.length}
+                                Selection: {selectedInstitutionIndices.length}
                             </TableHeaderColumn>
                         </TableRow>
                         <TableRow style={{ height: 20 }}>

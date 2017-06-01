@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { Component } from 'react';
+import AppBar from 'material-ui/AppBar';
 import Divider from 'material-ui/Divider';
 import Paper from 'material-ui/Paper';
 import TextField from 'material-ui/TextField';
@@ -7,6 +8,9 @@ import CircularProgress from 'material-ui/CircularProgress';
 import { ApplicationState } from '../store';
 import * as DepartmentDBStore from '../store/DepartmentDBReducer';
 import { connect } from 'react-redux';
+import IconButton from 'material-ui/IconButton';
+import NavigationClose from 'material-ui/svg-icons/navigation/close';
+import * as Radium from 'radium';
 
 type DepartmentDBProps = DepartmentDBStore.DepartmentDBState &
     typeof DepartmentDBStore.actionCreators;
@@ -17,38 +21,43 @@ interface AppState {
 
 const styles = {
     mainContainer: {
-        overFlow: 'visible',
-        backgroundColor: '#CFD8DC',
+        overflowY: 'auto',
         textAlign: 'center',
-        height: '100vh',
-    },
+        minWidth: 300,
+        margin: 20,
+    } as React.CSSProperties,
     deptView: {
+        opacity: 1,
         height: 175,
         width: 250,
-        margin: '10px 0px 10px 10px',
-        textAlign: 'center',
-        display: 'inline-block',
-        cursor: 'pointer',
-    }
-};
-
-const DepartmentDBView = ({ name = ``, departmentName = ``, isActive = false, pct = 0 }) => {
-    let localStyle = {
-        height: 175,
-        width: 200,
         margin: '10px',
         textAlign: 'center',
         display: 'inline-block',
         cursor: 'pointer',
-    };
+    } as React.CSSProperties,
+};
+
+const DepartmentDBView = ({ name = ``, departmentName = ``, isActive = false, pct = 0 }) => {
+    let localStyle = {
+        opacity: 0.7,
+        height: 175,
+        width: 220,
+        margin: '10px',
+        textAlign: 'center',
+        display: 'inline-block',
+        cursor: 'pointer',
+    } as React.CSSProperties;
 
     if (isActive) {
         localStyle = { ...styles.deptView };
     }
 
     return (
-        <Paper style={localStyle} zDepth={isActive ? 2 : 0}>
-            <h4>{name} | <small>{departmentName}</small></h4>
+        <Paper style={localStyle} zDepth={isActive ? 2 : 2}>
+              <AppBar 
+                    titleStyle={{fontSize: 15}}
+                    showMenuIconButton={false} 
+                    title={`${name} | ${departmentName}`} />
             <Divider />
             <div>
                 <h2>{pct} <small>%</small></h2>
@@ -57,7 +66,8 @@ const DepartmentDBView = ({ name = ``, departmentName = ``, isActive = false, pc
     );
 };
 
-export class DepartmentDBListView extends Component<DepartmentDBProps, AppState> {
+@Radium
+export class DepartmentDBsView extends Component<DepartmentDBProps, AppState> {
     constructor() {
         super();
 
@@ -80,7 +90,11 @@ export class DepartmentDBListView extends Component<DepartmentDBProps, AppState>
 
         return (
             <Paper style={styles.mainContainer} open={true}>
-                <h4>Department Databases</h4>
+                <AppBar 
+                    titleStyle={{fontSize: 20}}
+                    iconElementLeft={<IconButton><NavigationClose /></IconButton>}
+                    showMenuIconButton={true} 
+                    title={'Dept. Databases'} />
                 <Divider />
                 <TextField style={{ padding: '0px' }}
                     value={searchTxt}
@@ -112,4 +126,4 @@ export class DepartmentDBListView extends Component<DepartmentDBProps, AppState>
 export default connect(
     (state: ApplicationState) => state.departmentDBs,
     DepartmentDBStore.actionCreators
-)(DepartmentDBListView);
+)(DepartmentDBsView);
