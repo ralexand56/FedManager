@@ -14,11 +14,18 @@ export interface DepartmentDB {
     DBName: string;
     Abbrev: string;
     IsActive: boolean;
+    Pct: number;
     Color: string;
     EntityName: string;
     LastModified?: Date;
     LastModifiedUser?: string;
     Department: Department;
+    Institutions: Institution[];
+}
+
+export interface DepositInstitution {
+    BA_ID: number;
+    BA_KEY_ID: number;
 }
 
 export interface Institution {
@@ -63,6 +70,9 @@ export interface FederalInstitution {
     TerminationReasonID?: number;
     IsActive: boolean;
     IsBranch: boolean;
+    FederalEntityType: FederalEntityType;
+    Institutions: Institution[];
+    HoldingCompany: FederalInstitution;
 }
 
 export interface FederalEntityType {
@@ -75,7 +85,16 @@ export interface InstitutionFilter {
     deptDBID: number;
     searchTxt: string;
     isStartsWith: boolean;
-    selectedStates: Array<string> | null;
+    selectedStates: string[] | null;
+}
+
+export interface FedInstitutionFilter {
+    RSSDID: number | null;
+    searchTxt: string;
+    isStartsWith: boolean;
+    selectedStates: string[] | null;
+    searchBankingTypes: boolean;
+    searchHoldingCompanies: boolean;
 }
 
 export interface State {

@@ -11,6 +11,10 @@ import { connect } from 'react-redux';
 import IconButton from 'material-ui/IconButton';
 import NavigationClose from 'material-ui/svg-icons/navigation/close';
 import * as Radium from 'radium';
+import * as moment from 'moment';
+import {
+    DepartmentDB,
+} from './../services/data-types';
 
 type DepartmentDBProps = DepartmentDBStore.DepartmentDBState &
     typeof DepartmentDBStore.actionCreators;
@@ -37,7 +41,9 @@ const styles = {
     } as React.CSSProperties,
 };
 
-const DepartmentDBView = ({ name = ``, departmentName = ``, isActive = false, pct = 0 }) => {
+const DepartmentDBView = (props: { dept: DepartmentDB, isActive: boolean }) => {
+    let { dept, isActive } = props;
+
     let localStyle = {
         opacity: 0.7,
         height: 175,
@@ -48,20 +54,28 @@ const DepartmentDBView = ({ name = ``, departmentName = ``, isActive = false, pc
         cursor: 'pointer',
     } as React.CSSProperties;
 
+    let pctFormatted = Math.round(dept.Pct * 100);
+
     if (isActive) {
         localStyle = { ...styles.deptView };
     }
 
     return (
         <Paper style={localStyle} zDepth={isActive ? 2 : 2}>
-              <AppBar 
-                    titleStyle={{fontSize: 15}}
-                    showMenuIconButton={false} 
-                    title={`${name} | ${departmentName}`} />
+            <AppBar
+                titleStyle={{ fontSize: 15 }}
+                showMenuIconButton={false}
+                title={`${dept.Name} | ${dept.Department.Name}`} />
             <Divider />
             <div>
-                <h2>{pct} <small>%</small></h2>
+                <h2 style={{ margin: '45px 0 0 0' }}>{pctFormatted} <small>%</small></h2>
+                <CircularProgress style={{ margin: '-150px 0 0 0' }}
+                    mode="determinate"
+                    size={80}
+                    thickness={5}
+                    value={pctFormatted} />
             </div>
+            <h5>Last Updated | {moment(dept.LastModified).format('ll')}</h5>
         </Paper>
     );
 };
@@ -89,11 +103,11 @@ export class DepartmentDBsView extends Component<DepartmentDBProps, AppState> {
         let { searchTxt } = this.state;
 
         return (
-            <Paper style={styles.mainContainer} open={true}>
-                <AppBar 
-                    titleStyle={{fontSize: 20}}
+            <Paper style={styles.mainContainer} open={true} zDepth={2}>
+                <AppBar
+                    titleStyle={{ fontSize: 20 }}
                     iconElementLeft={<IconButton><NavigationClose /></IconButton>}
-                    showMenuIconButton={true} 
+                    showMenuIconButton={true}
                     title={'Dept. Databases'} />
                 <Divider />
                 <TextField style={{ padding: '0px' }}
@@ -104,15 +118,13 @@ export class DepartmentDBsView extends Component<DepartmentDBProps, AppState> {
                     deptDBsLoading ? (<CircularProgress />)
                         : (departmentDBs.map(d => (
                             <div onClick={
-                                () => selectDeptDB(d.DeptDBID,
-                                                   {
-                                        ...this.props.institutionFilter,
-                                        deptDBID: d.DeptDBID,
-                                    })}
+                                () => selectDeptDB(d.DeptDBID, {
+                                    ...this.props.institutionFilter,
+                                    deptDBID: d.DeptDBID,
+                                })}
                                 key={d.DeptDBID}>
                                 <DepartmentDBView
-                                    name={d.Name}
-                                    departmentName={d.Department.Name}
+                                    dept={d}
                                     isActive={d.DeptDBID === activeDeptDB!.DeptDBID}
                                 />
                             </div>

@@ -58,6 +58,10 @@ export default class App extends Component<{}, AppState> {
         <AppBar showMenuIconButton={false} 
                 title="Federal Institution Manager">
           <RaisedButton
+            label="Login"
+            onTouchTap={this.handleToggle}
+          />
+          <RaisedButton
             label="Department Databases"
             onTouchTap={this.handleToggle}
           />
