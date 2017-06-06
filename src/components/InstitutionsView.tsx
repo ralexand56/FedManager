@@ -23,6 +23,13 @@ import {
     TableRow,
 } from 'material-ui/Table';
 
+import {
+    Toolbar,
+    ToolbarGroup,
+    ToolbarSeparator,
+    ToolbarTitle
+} from 'material-ui/Toolbar';
+
 type InstitutionsProps = DepartmentDBStore.DepartmentDBState &
     typeof DepartmentDBStore.actionCreators;
 
@@ -46,6 +53,7 @@ interface AppState {
 @connect()
 @Radium
 export class InstitutionView extends Component<InstitutionsProps, AppState> {
+    node: SelectField;
     isStartsWith: boolean = true;
     constructor() {
         super();
@@ -60,6 +68,14 @@ export class InstitutionView extends Component<InstitutionsProps, AppState> {
         this.setState({ selectedState: value });
 
         this.props.setInstitutionFilter({ ...this.props.institutionFilter, selectedStates: value });
+    }
+
+    handleSelectedInstTypeChanged = (
+        evt: React.FormEvent<{}>,
+        index: number,
+        value: number[] | null) => {
+
+        this.props.setInstitutionFilter({ ...this.props.institutionFilter, selectedTypes: value });
     }
 
     handleToggleSelection(rows: number[] | string) {
@@ -81,9 +97,12 @@ export class InstitutionView extends Component<InstitutionsProps, AppState> {
             institutionsLoading,
             institutionFilter,
             institutionTotalCnt,
+            institutionTypes,
             selectedInstitutionIndices,
             states,
          } = this.props;
+
+        // console.dir(institutionFilter);
 
         let arr: number[] = [];
 
@@ -97,62 +116,84 @@ export class InstitutionView extends Component<InstitutionsProps, AppState> {
                     titleStyle={{ fontSize: 20 }}
                     showMenuIconButton={false}
                     title={activeDeptDB && (
-                            <span>{activeDeptDB!.Name}
+                        <span>{activeDeptDB!.Name}
                             <small> | Count: {institutionTotalCnt}</small></span>
-                            )} />
+                    )} />
+                <Toolbar>
+                    <ToolbarTitle text="Search" />
+                    <ToolbarGroup>
+                        Selection: {selectedInstitutionIndices.length}
+                    </ToolbarGroup>
+                    <ToolbarGroup>
+                        <TextField style={{ padding: '0px' }}
+                            onChange={(e, newVal) => this.handleSearchTxtChanged(e, newVal)}
+                            hintText="search by name..." />
+                        <Toggle
+                            style={{ width: 70 }}
+                            defaultToggled={true}
+                            onToggle={(e, isInputChecked) => this.handleStartsWithToggle(e, isInputChecked)}
+                            label={institutionFilter.isStartsWith ? 'starts' : 'contains'} />
+                    </ToolbarGroup>
+                    <ToolbarGroup>
+                        <SelectField
+                            floatingLabelText={'select state'}
+                            value={this.state.selectedState}
+                            style={{ fontSize: 15 }}
+                            multiple={true}
+                            onChange={this.handleSelectedStateChanged}>
+                            <MenuItem
+                                value={null}
+                                primaryText="Select State" />
+                            {
+                                states.map(st =>
+                                    (
+                                        <MenuItem key={st.StateCode}
+                                            value={st.StateCode}
+                                            primaryText={st.Name} />)
+                                )}
+                        </SelectField>
+                        <SelectField
+                            ref={node => this.node = node}
+                            floatingLabelText={'select type'}
+                            style={{ fontSize: 15 }}
+                            multiple={true}
+                            value={institutionFilter.selectedTypes}
+                            onChange={this.handleSelectedInstTypeChanged}>
+                            <MenuItem
+                                value={[0]}
+                                primaryText="select type" />
+                            {
+                                institutionTypes.map(typ =>
+                                    (
+                                        <MenuItem key={typ.InstitutionTypeID}
+                                            value={typ.InstitutionTypeID}
+                                            primaryText={typ.Name} />)
+                                )}
+                        </SelectField>
+                    </ToolbarGroup>
+                    <ToolbarSeparator />
+                </Toolbar>
                 <Table
                     onRowSelection={(e) => this.handleToggleSelection(e)}
                     fixedHeader={true}
                     selectable={true}
                     multiSelectable={true}>
                     <TableHeader
+                        adjustForCheckbox={false}
                         displaySelectAll={false}
                         enableSelectAll={true}>
-                        <TableRow>
-                            <TableHeaderColumn>
-                                <TextField style={{ padding: '0px' }}
-                                    onChange={(e, newVal) => this.handleSearchTxtChanged(e, newVal)}
-                                    hintText="search by name..." />
-                            </TableHeaderColumn>
-                            <TableHeaderColumn>
-                                <Toggle
-                                    style={{ width: 70 }}
-                                    defaultToggled={true}
-                                    onToggle={(e, isInputChecked) => this.handleStartsWithToggle(e, isInputChecked)}
-                                    label={institutionFilter.isStartsWith ? 'starts with' : 'contains'} />
-                            </TableHeaderColumn>
-                            <TableHeaderColumn>
-                                <SelectField
-                                    value={this.state.selectedState}
-                                    style={{ fontSize: 13 }}
-                                    multiple={true}
-                                    onChange={this.handleSelectedStateChanged}>
-                                    <MenuItem
-                                        value={[]}
-                                        primaryText="Select State" />
-                                    {
-                                        states.map(st =>
-                                            (
-                                                <MenuItem key={st.StateCode}
-                                                    value={st.StateCode}
-                                                    primaryText={st.Name} />)
-                                        )}
-                                </SelectField>
-                            </TableHeaderColumn>
-                            <TableHeaderColumn>
-                                Selection: {selectedInstitutionIndices.length}
-                            </TableHeaderColumn>
-                        </TableRow>
-                        <TableRow style={{ height: 20 }}>
+                        <TableRow style={{ height: 20 }} >
                             <TableHeaderColumn style={{ height: 20 }}>ID</TableHeaderColumn>
                             <TableHeaderColumn style={{ height: 20 }}>Name</TableHeaderColumn>
                             <TableHeaderColumn style={{ height: 20 }}>State</TableHeaderColumn>
+                            <TableHeaderColumn style={{ height: 20 }}>Type</TableHeaderColumn>
+                            <TableHeaderColumn style={{ height: 20 }}>Region</TableHeaderColumn>
                             <TableHeaderColumn style={{ height: 20 }}>Fed. Inst.</TableHeaderColumn>
                             <TableHeaderColumn style={{ height: 20 }}>RSSDID</TableHeaderColumn>
                         </TableRow>
                     </TableHeader>
                     <TableBody
-                        deselectOnClickaway={true}
+                        deselectOnClickaway={false}
                         displayRowCheckbox={false}
                         stripedRows={true}
                         showRowHover={false}>
@@ -164,6 +205,8 @@ export class InstitutionView extends Component<InstitutionsProps, AppState> {
                                 <TableRowColumn style={{ height: 20 }} >{i.CustomID}</TableRowColumn>
                                 <TableRowColumn style={{ height: 20 }} >{i.Name}</TableRowColumn>
                                 <TableRowColumn style={{ height: 20 }} >{i.StateCode}</TableRowColumn>
+                                <TableRowColumn style={{ height: 20 }} >{i.InstitutionType.Name}</TableRowColumn>
+                                <TableRowColumn style={{ height: 20 }} >{i.Region}</TableRowColumn>
                                 <TableRowColumn style={{ height: 20 }} >
                                     {i.FederalInstitution
                                         && i.FederalInstitution.Name}
@@ -186,6 +229,9 @@ export class InstitutionView extends Component<InstitutionsProps, AppState> {
 
     componentDidMount() {
         this.props.loadStates();
+        this.props.loadInstitutionTypes();
+
+        console.dir(this.node);
     }
 }
 

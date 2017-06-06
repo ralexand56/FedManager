@@ -4,6 +4,7 @@ import {
     DepositInstitution,
     Institution,
     InstitutionFilter,
+    InstitutionType,
     State,
     FederalInstitution,
     FedInstitutionFilter
@@ -23,16 +24,14 @@ export interface DepartmentDBState {
     institutionsLoading: boolean;
     institutionFilter: InstitutionFilter;
     institutionTotalCnt: number;
+    institutionTypes: InstitutionType[];
     searchTxt: string;
     selectedInstitutionIndices: Array<number> | string;
     states: Array<State>;
 }
 
 interface AssignFederalInstitutionAction {
-    type: 'ASSIGN_FEDINSITUTION';
-    rssdid: number;
-    deptDBID: number;
-    instIDs: number[];
+    type: 'ASSIGN_FEDINSTITUTION';
 }
 
 interface RequestDepartmentDBsAction {
@@ -60,6 +59,11 @@ interface SetFedInstitutionFilter {
 interface LoadStatesAction {
     type: 'LOAD_STATES';
     states: Array<State>;
+}
+
+interface LoadInstitutionTypesAction {
+    type: 'LOAD_INSTITUTIONTYPES';
+    instTypes: InstitutionType[];
 }
 
 interface RequestFedInstitutionsAction {
@@ -94,7 +98,7 @@ interface UpdateInstitutionSelection {
 
 type KnownAction = RequestDepartmentDBsAction | ReceiveDepartmentDBsAction | SetInstitutionFilter
     | SetFedInstitutionFilter | ReceiveInstitutionsAction | RequestInstitutionsAction
-    | RequestFedInstitutionsAction | ReceiveFedInstitutionsAction
+    | RequestFedInstitutionsAction | ReceiveFedInstitutionsAction | LoadInstitutionTypesAction
     | UpdateInstitutionSelection | AssignFederalInstitutionAction
     | SelectDeptDBAction | LoadStatesAction;
 
@@ -111,13 +115,22 @@ const fetchInstitutions =
             reqTxt += ` and ${instFilter.isStartsWith ? 'startswith' : 'contains'}(Name, '${encodedTxt}')`;
         }
 
-        if (instFilter.selectedStates !== null && instFilter.selectedStates.length) {
+        if (instFilter.selectedStates !== null
+            && instFilter.selectedStates.length
+            && Array.isArray(instFilter.selectedStates)) {
             let statesTxt = instFilter.selectedStates.map(x => `StateCode eq '${x}'`).join(' or ');
-            reqTxt += `and (${statesTxt})`;
+            reqTxt += ` and (${statesTxt})`;
         }
 
-        reqTxt += `&$top=60&$expand=FederalInstitution&$orderby=Name,StateCode&$count=true`;
-        // console.dir(reqTxt);
+        if (instFilter.selectedTypes !== null
+            && instFilter.selectedTypes.length
+            && Array.isArray(instFilter.selectedTypes)) {
+            let typesTxt = instFilter.selectedTypes.map(x => `InstitutionTypeID eq ${x}`).join(' or ');
+            reqTxt += ` and (${typesTxt})`;
+        }
+
+        reqTxt += `&$top=60&$expand=FederalInstitution,InstitutionType&$orderby=Name,StateCode&$count=true`;
+        console.dir(reqTxt);
         fetch(reqTxt)
             .then(response => response.json())
             .then(insts => {
@@ -187,8 +200,10 @@ export const fetchFederalInstitutions =
             });
     };
 
-export const assignFedByDeptDB = (deptDBID: number, rssDID: number, instID: string) => {
+export const assignFedByDeptDB = (dispatch: (action: KnownAction) => void,
+    deptDBID: number, rssDID: number, instID: string) => {
     let response: Promise<Response>;
+    console.dir(deptDBID);
 
     switch (deptDBID) {
         case 1:
@@ -202,7 +217,7 @@ export const assignFedByDeptDB = (deptDBID: number, rssDID: number, instID: stri
                     BA_KEY_ID: rssDID.toString()
                 };
 
-                return fetch(`DepositInstitutions(${institution.BA_ID})`, {
+                fetch(`DepositInstitutions(${institution.BA_ID})`, {
                     method: 'patch',
                     body: JSON.stringify(rssInst)
                 });
@@ -217,7 +232,7 @@ export const assignFedByDeptDB = (deptDBID: number, rssDID: number, instID: stri
 
                 institution.RSSDID = rssDID;
 
-                return fetch(`ConsumerInstitutions(${institution.InstitutionID})`, {
+                fetch(`ConsumerInstitutions(${institution.InstitutionID})`, {
                     method: 'put',
                     body: JSON.stringify(institution)
                 });
@@ -227,6 +242,10 @@ export const assignFedByDeptDB = (deptDBID: number, rssDID: number, instID: stri
         default:
             break;
     }
+
+    dispatch({
+        type: 'ASSIGN_FEDINSTITUTION',
+    });
 };
 
 export const updateModifiedDate = (dbid: number) => {
@@ -239,11 +258,17 @@ export const updateModifiedDate = (dbid: number) => {
 export const actionCreators = {
     assignFed: (fedInst: FederalInstitution, deptDBID: number, instIDs: number[] | string):
         AppThunkAction<KnownAction> => (dispatch: (action: KnownAction) => void, getState: () => ApplicationState) => {
-            // let rssDID = fedInst.RSSDID;
-            console.dir(fedInst);
+            let rssDID = fedInst.RSSDID;
+
+            // console.dir(fedInst);
             if (typeof (instIDs) !== 'string') {
+                console.dir(instIDs);
                 instIDs.forEach(i => {
-                    // assignFedByDeptDB(deptDBID, rssDID, getState().departmentDBs.activeInstitutions[i].CustomID);
+                    assignFedByDeptDB(
+                        dispatch,
+                        deptDBID,
+                        rssDID,
+                        getState().departmentDBs.activeInstitutions[i].CustomID);
                 });
             }
 
@@ -255,6 +280,13 @@ export const actionCreators = {
             fetch(`${baseUrl}States`)
                 .then(response => response.json())
                 .then(states => dispatch({ type: 'LOAD_STATES', states: states.value }));
+        },
+
+    loadInstitutionTypes: ():
+        AppThunkAction<KnownAction> => (dispatch: (action: KnownAction) => void, getState: () => ApplicationState) => {
+            fetch(`${baseUrl}InstitutionTypes`)
+                .then(response => response.json())
+                .then(instTypes => dispatch({ type: 'LOAD_INSTITUTIONTYPES', instTypes: instTypes.value }));
         },
 
     requestDepartmentDBs: (searchTxt: string, instFilter: InstitutionFilter):
@@ -333,8 +365,10 @@ const unloadedState: DepartmentDBState = {
         searchTxt: '',
         isStartsWith: true,
         selectedStates: [],
+        selectedTypes: null,
     },
     institutionTotalCnt: 0,
+    institutionTypes: [],
     searchTxt: '',
     selectedInstitutionIndices: [],
     states: [],
@@ -342,6 +376,12 @@ const unloadedState: DepartmentDBState = {
 
 export const reducer: Reducer<DepartmentDBState> = (state: DepartmentDBState, action: KnownAction) => {
     switch (action.type) {
+        case 'ASSIGN_FEDINSTITUTION':
+
+            return {
+                ...state,
+            };
+
         case 'REQUEST_DEPARTMENTDBS':
 
             return {
@@ -380,6 +420,13 @@ export const reducer: Reducer<DepartmentDBState> = (state: DepartmentDBState, ac
                 states: action.states,
             };
 
+        case 'LOAD_INSTITUTIONTYPES':
+
+            return {
+                ...state,
+                institutionTypes: action.instTypes,
+            };
+
         case 'REQUEST_FEDINSTITUTIONS':
 
             return {
@@ -415,12 +462,14 @@ export const reducer: Reducer<DepartmentDBState> = (state: DepartmentDBState, ac
 
         case 'SELECT_DEPTDB':
             let activeDB = state.departmentDBs.filter(d => d.DeptDBID === action.deptDBID)[0];
+            action.institutionFilter = unloadedState.institutionFilter;
             action.institutionFilter.deptDBID = action.deptDBID;
 
             actionCreators.setInstitutionFilter(action.institutionFilter);
             return {
                 ...state,
                 activeDeptDB: activeDB,
+                institutionFilter: action.institutionFilter,
             };
 
         case 'UPDATE_INSTITUTION_SELECTION':

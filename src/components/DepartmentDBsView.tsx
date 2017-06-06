@@ -68,7 +68,7 @@ const DepartmentDBView = (props: { dept: DepartmentDB, isActive: boolean }) => {
                 title={`${dept.Name} | ${dept.Department.Name}`} />
             <Divider />
             <div>
-                <h2 style={{ margin: '45px 0 0 0' }}>{pctFormatted} <small>%</small></h2>
+                <h2 style={{ margin: '45px 0 0 0' }}>{pctFormatted}<small>%</small></h2>
                 <CircularProgress style={{ margin: '-150px 0 0 0' }}
                     mode="determinate"
                     size={80}

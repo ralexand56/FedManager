@@ -1,4 +1,4 @@
-import { FederalInstitution } from './data-types';
+import { FederalInstitution, InstitutionType } from './data-types';
 export interface Department {
     DeptID: number;
     Name: string;
@@ -33,12 +33,19 @@ export interface Institution {
     CustomID: string;
     Name: string;
     StateCode: string;
+    InstitutionType: InstitutionType;
     InstitutionTypeID: number;
+    Region: string;
     RSSDID?: number;
     HCID: number;
     DeptDBID: number;
     FederalInstitution: FederalInstitution;
     IsSelected: boolean;
+}
+
+export interface InstitutionType {
+    InstitutionTypeID: number;
+    Name: string;
 }
 
 export interface FederalInstitution {
@@ -86,6 +93,7 @@ export interface InstitutionFilter {
     searchTxt: string;
     isStartsWith: boolean;
     selectedStates: string[] | null;
+    selectedTypes: number[] | string | null;
 }
 
 export interface FedInstitutionFilter {

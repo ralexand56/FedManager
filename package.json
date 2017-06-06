@@ -13,11 +13,13 @@
     "react-tap-event-plugin": "^2.0.1"
   },
   "devDependencies": {
+    "@types/hellojs": "^0.2.31",
     "@types/material-ui": "^0.17.6",
     "@types/radium": "^0.18.21",
     "@types/react-tap-event-plugin": "0.0.30",
     "@types/redux-logger": "^3.0.0",
     "@types/redux-promise-middleware": "0.0.6",
+    "hellojs": "^1.14.1",
     "material-ui": "^0.18.1",
     "moment": "^2.18.1",
     "multisort": "^0.5.3",
