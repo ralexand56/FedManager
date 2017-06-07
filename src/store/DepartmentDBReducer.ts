@@ -482,7 +482,7 @@ export const reducer: Reducer<DepartmentDBState> = (state: DepartmentDBState, ac
                 fedInstitutions: action.fedInstitutions,
                 fedInstitutionsLoading: false,
             };
-                                                                     sick
+            
         case 'SELECT_ALL':
 
             return {
@@ -513,7 +513,7 @@ export const reducer: Reducer<DepartmentDBState> = (state: DepartmentDBState, ac
 
             return {
                 ...state,
-                selectedInstitutionIndices: action.indices,                                                                                                                   
+                selectedInstitutionIndices: action.indices,
             };
 
         default:
