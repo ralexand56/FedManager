@@ -2,6 +2,9 @@ import * as React from 'react';
 import { Component } from 'react';
 // import { Institution, DepartmentDB } from './services/data-types';
 import AppBar from 'material-ui/AppBar';
+import { ApplicationState } from './store';
+import { connect } from 'react-redux';
+import * as DepartmentDBStore from './store/DepartmentDBReducer';
 import DepartmentDBsView from './components/DepartmentDBsView';
 import InstitutionsView from './components/InstitutionsView';
 import * as Radium from 'radium';
@@ -15,6 +18,7 @@ import * as hello from 'hellojs';
 const styles = {
   mainContainer: {
     display: 'flex',
+    width: '100%',
     height: '100%',
   } as React.CSSProperties,
   asideContainer: {
@@ -22,6 +26,7 @@ const styles = {
     height: '100%',
   } as React.CSSProperties,
   bodyContainer: {
+    width: '100%',
     height: '100%',
   } as React.CSSProperties,
   bodyTopContainer: {
@@ -34,20 +39,15 @@ const styles = {
   } as React.CSSProperties,
 };
 
-interface AppState {
-  open: boolean;
-}
+type AppProps = DepartmentDBStore.DepartmentDBState &
+    typeof DepartmentDBStore.actionCreators;
 
 @Radium
-export default class App extends Component<{}, AppState> {
+export class App extends Component<AppProps, void> {
   baseUrl = `http://dev.informars.com/webservices/FedSvc/odata/`;
 
   constructor() {
     super();
-
-    this.state = {
-      open: false,
-    };
 
     hello.init({
       windows: 'beb173ee-10fd-40cf-861e-5a5a8585c013',
@@ -69,14 +69,15 @@ export default class App extends Component<{}, AppState> {
     });
   }
 
-  handleToggle = () => this.setState({ open: !this.state.open });
+  handleToggle = () => this.setState({ open: false });
 
   login = () => hello('windows').login();
 
   render() {
+    let { showDeptDBs } = this.props;
 
     return (
-      <div style={{ fontFamily: 'Roboto', height: '100%' }}>
+      <div style={{ fontFamily: 'Roboto', height: '100%', width: '100%' }}>
         <AppBar showMenuIconButton={false}
           title="Federal Institution Manager">
           <RaisedButton
@@ -89,13 +90,18 @@ export default class App extends Component<{}, AppState> {
           />
         </AppBar>
         <div style={styles.mainContainer}>
-          <DepartmentDBsView />
           <div style={styles.bodyContainer}>
             <InstitutionsView />
             <FederalInstitutionsView />
           </div>
+          
+          {showDeptDBs && <DepartmentDBsView />}
         </div>
       </div>
     );
   }
 }
+export default connect(
+    (state: ApplicationState) => state.departmentDBs,
+    DepartmentDBStore.actionCreators
+)(App);

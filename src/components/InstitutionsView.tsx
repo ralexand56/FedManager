@@ -7,6 +7,7 @@ import CircularProgress from 'material-ui/CircularProgress';
 import * as DepartmentDBStore from '../store/DepartmentDBReducer';
 // import { InstitutionFilter } from './../services/data-types';
 // import LinearProgress from 'material-ui/LinearProgress';
+import FlatButton from 'material-ui/FlatButton';
 import MenuItem from 'material-ui/MenuItem';
 import Paper from 'material-ui/Paper';
 import * as Radium from 'radium';
@@ -38,7 +39,7 @@ const styles = {
         height: '60%',
         flow: 1,
         backgroundColor: 'white',
-        margin: 20,
+        margin: 5,
         overflow: 'auto',
     } as React.CSSProperties,
     loader: {
@@ -78,6 +79,14 @@ export class InstitutionView extends Component<InstitutionsProps, AppState> {
         this.props.setInstitutionFilter({ ...this.props.institutionFilter, selectedTypes: value });
     }
 
+    handleSelectAll = () => {
+        this.props.selectAll();
+    }
+
+    handleSelectNone = () => {
+        this.props.selectNone();
+    }
+
     handleToggleSelection(rows: number[] | string) {
         this.props.updateInstitutionSelection(rows);
     }
@@ -102,8 +111,6 @@ export class InstitutionView extends Component<InstitutionsProps, AppState> {
             states,
          } = this.props;
 
-        // console.dir(institutionFilter);
-
         let arr: number[] = [];
 
         if (typeof (selectedInstitutionIndices) !== 'string') {
@@ -123,6 +130,8 @@ export class InstitutionView extends Component<InstitutionsProps, AppState> {
                     <ToolbarTitle text="Search" />
                     <ToolbarGroup>
                         Selection: {selectedInstitutionIndices.length}
+                        <FlatButton label="All" onClick={this.handleSelectAll} />
+                        <FlatButton label="None" onClick={this.handleSelectNone} />
                     </ToolbarGroup>
                     <ToolbarGroup>
                         <TextField style={{ padding: '0px' }}

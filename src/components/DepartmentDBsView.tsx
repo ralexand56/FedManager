@@ -28,7 +28,7 @@ const styles = {
         overflowY: 'auto',
         textAlign: 'center',
         minWidth: 300,
-        margin: 20,
+        margin: 5,
     } as React.CSSProperties,
     deptView: {
         opacity: 1,

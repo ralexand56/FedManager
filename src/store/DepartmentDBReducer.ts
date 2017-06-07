@@ -27,6 +27,7 @@ export interface DepartmentDBState {
     institutionTypes: InstitutionType[];
     searchTxt: string;
     selectedInstitutionIndices: Array<number> | string;
+    showDeptDBs: boolean;
     states: Array<State>;
 }
 
@@ -54,6 +55,14 @@ interface SetInstitutionFilter {
 interface SetFedInstitutionFilter {
     type: 'SET_FEDINSTITUTION_FILTER';
     fedInstitutionFilter: FedInstitutionFilter;
+}
+
+interface SelectAllAction {
+    type: 'SELECT_ALL';
+}
+
+interface SelectNoneAction {
+    type: 'SELECT_NONE';
 }
 
 interface LoadStatesAction {
@@ -99,7 +108,7 @@ interface UpdateInstitutionSelection {
 type KnownAction = RequestDepartmentDBsAction | ReceiveDepartmentDBsAction | SetInstitutionFilter
     | SetFedInstitutionFilter | ReceiveInstitutionsAction | RequestInstitutionsAction
     | RequestFedInstitutionsAction | ReceiveFedInstitutionsAction | LoadInstitutionTypesAction
-    | UpdateInstitutionSelection | AssignFederalInstitutionAction
+    | UpdateInstitutionSelection | AssignFederalInstitutionAction | SelectAllAction | SelectNoneAction
     | SelectDeptDBAction | LoadStatesAction;
 
 const fetchInstitutions =
@@ -130,7 +139,7 @@ const fetchInstitutions =
         }
 
         reqTxt += `&$top=60&$expand=FederalInstitution,InstitutionType&$orderby=Name,StateCode&$count=true`;
-        console.dir(reqTxt);
+        // console.dir(reqTxt);
         fetch(reqTxt)
             .then(response => response.json())
             .then(insts => {
@@ -330,6 +339,18 @@ export const actionCreators = {
             dispatch({ type: 'SET_FEDINSTITUTION_FILTER', fedInstitutionFilter: fedInstitutionFilter });
         },
 
+    selectAll: () => {
+        return ({
+            type: 'SELECT_ALL'
+        });
+    },
+
+    selectNone: () => {
+        return ({
+            type: 'SELECT_NONE'
+        });
+    },
+
     selectDeptDB: (deptDBID: number, instFilter: InstitutionFilter):
         AppThunkAction<KnownAction> => (dispatch, getState) => {
             fetchInstitutions(dispatch, instFilter);
@@ -361,7 +382,7 @@ const unloadedState: DepartmentDBState = {
     fedInstitutionsLoading: false,
     institutionsLoading: false,
     institutionFilter: {
-        deptDBID: 0,
+        deptDBID: 1,
         searchTxt: '',
         isStartsWith: true,
         selectedStates: [],
@@ -371,6 +392,7 @@ const unloadedState: DepartmentDBState = {
     institutionTypes: [],
     searchTxt: '',
     selectedInstitutionIndices: [],
+    showDeptDBs: true,
     states: [],
 };
 
@@ -441,6 +463,7 @@ export const reducer: Reducer<DepartmentDBState> = (state: DepartmentDBState, ac
                 ...state,
                 activeInstitutions: [],
                 institutionsLoading: true,
+                institutionTotalCnt: 0,
             };
 
         case 'RECEIVE_INSTITUTIONS':
@@ -459,6 +482,20 @@ export const reducer: Reducer<DepartmentDBState> = (state: DepartmentDBState, ac
                 fedInstitutions: action.fedInstitutions,
                 fedInstitutionsLoading: false,
             };
+                                                                     sick
+        case 'SELECT_ALL':
+
+            return {
+                ...state,
+                selectedInstitutionIndices: state.activeInstitutions.map((x, ind) => ind),
+            };
+
+        case 'SELECT_NONE':
+
+            return {
+                ...state,
+                selectedInstitutionIndices: [],
+            };
 
         case 'SELECT_DEPTDB':
             let activeDB = state.departmentDBs.filter(d => d.DeptDBID === action.deptDBID)[0];
@@ -476,7 +513,7 @@ export const reducer: Reducer<DepartmentDBState> = (state: DepartmentDBState, ac
 
             return {
                 ...state,
-                selectedInstitutionIndices: action.indices,
+                selectedInstitutionIndices: action.indices,                                                                                                                   
             };
 
         default:

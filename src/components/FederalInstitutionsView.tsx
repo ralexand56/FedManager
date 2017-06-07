@@ -20,13 +20,12 @@ type FedInstitutionsProps = DepartmentDBStore.DepartmentDBState &
 
 const styles = {
     mainContainer: {
-        margin: 20,
+        margin: 5,
         height: '100%',
-        width: '100vw',
-        overflowX: 'scroll',
     } as React.CSSProperties,
     fedContainer: {
-        display: 'flex',
+        width: '100%',
+        overflow: 'auto',
     } as React.CSSProperties,
 };
 
