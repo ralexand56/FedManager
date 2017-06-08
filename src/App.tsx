@@ -56,7 +56,7 @@ export class App extends Component<AppProps, void> {
     hello.init({
       windows: '8b8e7508-5d17-4800-9c56-a04d55ea53f5',
     },
-      {
+               {
         redirect_uri: 'https://login.live.com/oauth20_desktop.srf',
       },
     );
