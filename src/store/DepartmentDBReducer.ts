@@ -1,115 +1,17 @@
 import { AppThunkAction, ApplicationState } from './index';
 import {
+    DepartmentDBState,
     DepartmentDB,
     DepositInstitution,
+    KnownAction,
     Institution,
     InstitutionFilter,
-    InstitutionType,
-    State,
     FederalInstitution,
     FedInstitutionFilter
 } from './../services/data-types';
 import { Reducer } from 'redux';
 
-const baseUrl = `http://dev.informars.com/webservices/FedSvc/odata/`;
-
-export interface DepartmentDBState {
-    activeDeptDB?: DepartmentDB;
-    activeInstitutions: Institution[];
-    departmentDBs: DepartmentDB[];
-    deptDBsLoading: boolean;
-    fedInstitutions: FederalInstitution[];
-    fedInstitutionFilter: FedInstitutionFilter;
-    fedInstitutionsLoading: boolean;
-    institutionsLoading: boolean;
-    institutionFilter: InstitutionFilter;
-    institutionTotalCnt: number;
-    institutionTypes: InstitutionType[];
-    searchTxt: string;
-    selectedInstitutionIndices: Array<number> | string;
-    showDeptDBs: boolean;
-    states: Array<State>;
-}
-
-interface AssignFederalInstitutionAction {
-    type: 'ASSIGN_FEDINSTITUTION';
-}
-
-interface RequestDepartmentDBsAction {
-    type: 'REQUEST_DEPARTMENTDBS';
-    searchTxt: string;
-    institutionFilter: InstitutionFilter;
-};
-
-interface ReceiveDepartmentDBsAction {
-    type: 'RECEIVE_DEPARTMENTDBS';
-    searchTxt: string;
-    departmentDBs: Array<DepartmentDB>;
-};
-
-interface SetInstitutionFilter {
-    type: 'SET_INSTITUTION_FILTER';
-    institutionFilter: InstitutionFilter;
-}
-
-interface SetFedInstitutionFilter {
-    type: 'SET_FEDINSTITUTION_FILTER';
-    fedInstitutionFilter: FedInstitutionFilter;
-}
-
-interface SelectAllAction {
-    type: 'SELECT_ALL';
-}
-
-interface SelectNoneAction {
-    type: 'SELECT_NONE';
-}
-
-interface LoadStatesAction {
-    type: 'LOAD_STATES';
-    states: Array<State>;
-}
-
-interface LoadInstitutionTypesAction {
-    type: 'LOAD_INSTITUTIONTYPES';
-    instTypes: InstitutionType[];
-}
-
-interface RequestFedInstitutionsAction {
-    type: 'REQUEST_FEDINSTITUTIONS';
-};
-
-interface ReceiveFedInstitutionsAction {
-    type: 'RECEIVE_FEDINSTITUTIONS';
-    fedInstitutions: FederalInstitution[];
-};
-
-interface RequestInstitutionsAction {
-    type: 'REQUEST_INSTITUTIONS';
-};
-
-interface ReceiveInstitutionsAction {
-    type: 'RECEIVE_INSTITUTIONS';
-    activeInstitutions: Array<Institution>;
-    cnt: number;
-};
-
-interface SelectDeptDBAction {
-    type: 'SELECT_DEPTDB';
-    deptDBID: number;
-    institutionFilter: InstitutionFilter;
-};
-
-interface UpdateInstitutionSelection {
-    type: 'UPDATE_INSTITUTION_SELECTION';
-    indices: string | Array<number>;
-}
-
-type KnownAction = RequestDepartmentDBsAction | ReceiveDepartmentDBsAction | SetInstitutionFilter
-    | SetFedInstitutionFilter | ReceiveInstitutionsAction | RequestInstitutionsAction
-    | RequestFedInstitutionsAction | ReceiveFedInstitutionsAction | LoadInstitutionTypesAction
-    | UpdateInstitutionSelection | AssignFederalInstitutionAction | SelectAllAction | SelectNoneAction
-    | SelectDeptDBAction | LoadStatesAction;
+const baseUrl = `https://dev.informars.com/webservices/FedSvc/odata/`;
 
 const fetchInstitutions =
     (dispatch: (action: KnownAction) => void, instFilter: InstitutionFilter) => {
@@ -163,7 +65,9 @@ export const fetchFederalInstitutions =
     (dispatch: (action: KnownAction) => void, searchOptions: FedInstitutionFilter) => {
         dispatch({ type: 'REQUEST_FEDINSTITUTIONS' });
 
-        if (searchOptions.searchTxt === '') {
+        if (searchOptions.searchTxt === '' 
+            && (searchOptions.RSSDID === undefined  
+            || searchOptions.RSSDID!.toString().trim() === '')) {
             dispatch({
                 type: 'RECEIVE_FEDINSTITUTIONS',
                 fedInstitutions: [],
@@ -172,31 +76,38 @@ export const fetchFederalInstitutions =
             return;
         }
 
-        let searchStr = `${baseUrl}FederalInstitutions?$filter=IsActive%20eq%20true`;
-        let nameSearch = encodeURIComponent(searchOptions.searchTxt);
+        let searchStr = (searchOptions.RSSDID === undefined 
+            || searchOptions.RSSDID.toString().trim() === '')
+            ? `${baseUrl}FederalInstitutions?$filter=IsActive%20eq%20true`
+            : `${baseUrl}FederalInstitutions?$filter=RSSDID eq ${searchOptions.RSSDID}
+                &$expand=Institutions,FederalEntityType,HoldingCompany`;
 
-        searchStr += ` and IsHCCode ne 1`;
+        if (searchOptions.RSSDID === undefined || 
+            searchOptions.RSSDID.toString().trim() === '') {
+            let nameSearch = encodeURIComponent(searchOptions.searchTxt);
 
-        if (searchOptions.searchBankingTypes) {
-            searchStr += ` and (FederalEntityTypeCode eq 'NMB' 
+            searchStr += ` and IsHCCode ne 1`;
+
+            if (searchOptions.searchBankingTypes) {
+                searchStr += ` and (FederalEntityTypeCode eq 'NMB' 
                       or FederalEntityTypeCode eq 'CPB' 
                       or FederalEntityTypeCode eq 'FBK' 
                       or FederalEntityTypeCode eq 'SMB' 
                       or FederalEntityTypeCode eq 'SSB' 
                       or FederalEntityTypeCode eq 'NAT' 
                       or FederalEntityTypeCode eq 'AGB')`;
-        }
+            }
 
-        if (searchOptions.isStartsWith) {
-            searchStr += ` and (startswith(FullName, '${nameSearch}') 
+            if (searchOptions.isStartsWith) {
+                searchStr += ` and (startswith(FullName, '${nameSearch}') 
             ${searchOptions.searchHoldingCompanies ? `or startswith(HoldingCompany/FullName, '${nameSearch}')` : ``})`;
-        } else {
-            searchStr += ` and (contains(FullName, '${nameSearch}') 
+            } else {
+                searchStr += ` and (contains(FullName, '${nameSearch}') 
             ${searchOptions.searchHoldingCompanies ? `or contains(HoldingCompany/FullName, '${nameSearch}')` : ``})`;
+            }
+
+            searchStr += `&$top=50&$expand=Institutions,FederalEntityType,HoldingCompany&$orderby=FullName,StateCode`;
         }
-
-        searchStr += `&$top=50&$expand=Institutions,FederalEntityType,HoldingCompany&$orderby=FullName,StateCode`;
-
         // console.dir(searchStr);
         fetch(searchStr)
             .then(response => response.json())
@@ -212,7 +123,6 @@ export const fetchFederalInstitutions =
 export const assignFedByDeptDB = (dispatch: (action: KnownAction) => void,
     deptDBID: number, rssDID: number, instID: string) => {
     let response: Promise<Response>;
-    console.dir(deptDBID);
 
     switch (deptDBID) {
         case 1:
@@ -358,6 +268,12 @@ export const actionCreators = {
             dispatch({ type: 'SELECT_DEPTDB', deptDBID: deptDBID, institutionFilter: instFilter });
         },
 
+    toggleDepartmentVisibility: () => {
+        return {
+            type: 'TOGGLE_DEPARTMENT_VISIBILITY',
+        };
+    },
+
     updateInstitutionSelection: (indices: string | number[]) => {
         return {
             type: 'UPDATE_INSTITUTION_SELECTION', indices: indices
@@ -372,7 +288,7 @@ const unloadedState: DepartmentDBState = {
     deptDBsLoading: false,
     fedInstitutions: [],
     fedInstitutionFilter: {
-        RSSDID: null,
+        RSSDID: undefined,
         searchTxt: '',
         isStartsWith: true,
         searchBankingTypes: false,
@@ -385,6 +301,7 @@ const unloadedState: DepartmentDBState = {
         deptDBID: 1,
         searchTxt: '',
         isStartsWith: true,
+        RSSDID: null,
         selectedStates: [],
         selectedTypes: null,
     },
@@ -482,7 +399,7 @@ export const reducer: Reducer<DepartmentDBState> = (state: DepartmentDBState, ac
                 fedInstitutions: action.fedInstitutions,
                 fedInstitutionsLoading: false,
             };
-            
+
         case 'SELECT_ALL':
 
             return {
@@ -509,11 +426,18 @@ export const reducer: Reducer<DepartmentDBState> = (state: DepartmentDBState, ac
                 institutionFilter: action.institutionFilter,
             };
 
-        case 'UPDATE_INSTITUTION_SELECTION':
+        case 'SET_FEDINSTITUTION_FILTER':
 
             return {
                 ...state,
-                selectedInstitutionIndices: action.indices,
+                fedInstitutionFilter: action.fedInstitutionFilter,
+            };
+
+        case 'TOGGLE_DEPARTMENT_VISIBILITY':
+
+            return {
+                ...state,
+                showDeptDBs: !state.showDeptDBs,
             };
 
         default:

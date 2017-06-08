@@ -3,7 +3,7 @@ import { Component } from 'react';
 import AppBar from 'material-ui/AppBar';
 import { ApplicationState } from '../store';
 import { connect } from 'react-redux';
-import { FederalInstitutionView} from './FederalInstitutionView';
+import { FederalInstitutionView } from './FederalInstitutionView';
 import * as DepartmentDBStore from '../store/DepartmentDBReducer';
 import Paper from 'material-ui/Paper';
 import TextField from 'material-ui/TextField';
@@ -15,7 +15,11 @@ import {
     ToolbarTitle
 } from 'material-ui/Toolbar';
 
-type FedInstitutionsProps = DepartmentDBStore.DepartmentDBState &
+import {
+    DepartmentDBState,
+} from './../services/data-types';
+
+type FedInstitutionsProps = DepartmentDBState &
     typeof DepartmentDBStore.actionCreators;
 
 const styles = {
@@ -26,12 +30,20 @@ const styles = {
     fedContainer: {
         width: '100%',
         overflow: 'auto',
+        display: 'flex',
     } as React.CSSProperties,
 };
 
 export class FederalInstitutionsView extends Component<FedInstitutionsProps, void> {
     handleSearchTxtChanged(e: React.FormEvent<{}>, newVal: string) {
-        this.props.setFedInstitutionFilter({ ...this.props.fedInstitutionFilter, searchTxt: newVal});
+        this.props.setFedInstitutionFilter({ ...this.props.fedInstitutionFilter, searchTxt: newVal });
+    }
+
+    handleRSSDIDChanged(e: React.FormEvent<{}>, newVal: string) {
+        this.props.setFedInstitutionFilter({ 
+            ...this.props.fedInstitutionFilter, 
+            RSSDID: newVal.trim() === '' ? undefined : parseInt(newVal, 10) 
+        });
     }
 
     render() {
@@ -59,13 +71,18 @@ export class FederalInstitutionsView extends Component<FedInstitutionsProps, voi
                             defaultToggled={true}
                             label={fedInstitutionFilter.isStartsWith ? 'starts' : 'contains'} />
                     </ToolbarGroup>
+                    <ToolbarGroup>
+                        <TextField
+                            onChange={(e, newVal) => this.handleRSSDIDChanged(e, newVal)}
+                            hintText="enter RSSDID..." />
+                    </ToolbarGroup>
                     <ToolbarSeparator />
                 </Toolbar>
                 <div style={styles.fedContainer}>
                     {fedInstitutions.map(f => (
-                        <FederalInstitutionView {...this.props} key={f.RSSDID} 
+                        <FederalInstitutionView {...this.props} key={f.RSSDID}
                             fedInst={f}
-                         />
+                        />
                     ))}
                 </div>
             </Paper>

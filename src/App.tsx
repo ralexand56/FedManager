@@ -4,6 +4,10 @@ import { Component } from 'react';
 import AppBar from 'material-ui/AppBar';
 import { ApplicationState } from './store';
 import { connect } from 'react-redux';
+
+import {
+  DepartmentDBState,
+} from './services/data-types';
 import * as DepartmentDBStore from './store/DepartmentDBReducer';
 import DepartmentDBsView from './components/DepartmentDBsView';
 import InstitutionsView from './components/InstitutionsView';
@@ -39,8 +43,8 @@ const styles = {
   } as React.CSSProperties,
 };
 
-type AppProps = DepartmentDBStore.DepartmentDBState &
-    typeof DepartmentDBStore.actionCreators;
+type AppProps = DepartmentDBState &
+  typeof DepartmentDBStore.actionCreators;
 
 @Radium
 export class App extends Component<AppProps, void> {
@@ -50,31 +54,42 @@ export class App extends Component<AppProps, void> {
     super();
 
     hello.init({
-      windows: 'beb173ee-10fd-40cf-861e-5a5a8585c013',
-    },         { redirect_uri: 'redirect.html' });
+      windows: '8b8e7508-5d17-4800-9c56-a04d55ea53f5',
+    },
+      {
+        redirect_uri: 'https://login.live.com/oauth20_desktop.srf',
+      },
+    );
 
-    hello.on('auth.login', (auth) => {
-      console.dir('hello!');
-      // Call user information, for the given network
-      hello(auth.network).api('me').then((r) => {
-        // Inject it into the container
-        var label = document.getElementById('profile_' + auth.network);
-        if (!label) {
-          label = document.createElement('div');
-          label.id = 'profile_' + auth.network;
-          document.getElementById('profile')!.appendChild(label);
-        }
-        // label.innerHTML = '<img src="' + r.thumbnail + '" /> Hey ' + r.name;
-      });
+    let wl = hello('windows').getAuthResponse();
+    console.dir(wl);
+    hello.on('auth.login', () => this.auth);
+
+    // console.dir(hello);
+  }
+
+  auth = (auth: { network: string }) => {
+    console.dir('hello!');
+    // Call user information, for the given network
+    hello(auth.network).api('me').then((r) => {
+      // Inject it into the container
+      var label = document.getElementById('profile_' + auth.network);
+      if (!label) {
+        label = document.createElement('div');
+        label.id = 'profile_' + auth.network;
+        document.getElementById('profile')!.appendChild(label);
+      }
+      // label.innerHTML = '<img src="' + r.thumbnail + '" /> Hey ' + r.name;
     });
   }
 
-  handleToggle = () => this.setState({ open: false });
+  handleToggle = () => this.props.toggleDepartmentVisibility();
 
-  login = () => hello('windows').login();
+  login = () => {
+    hello('windows').login();
+  }
 
   render() {
-    let { showDeptDBs } = this.props;
 
     return (
       <div style={{ fontFamily: 'Roboto', height: '100%', width: '100%' }}>
@@ -94,14 +109,14 @@ export class App extends Component<AppProps, void> {
             <InstitutionsView />
             <FederalInstitutionsView />
           </div>
-          
-          {showDeptDBs && <DepartmentDBsView />}
+
+          <DepartmentDBsView />
         </div>
       </div>
     );
   }
 }
 export default connect(
-    (state: ApplicationState) => state.departmentDBs,
-    DepartmentDBStore.actionCreators
+  (state: ApplicationState) => state.departmentDBs,
+  DepartmentDBStore.actionCreators
 )(App);

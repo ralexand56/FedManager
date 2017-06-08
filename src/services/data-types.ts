@@ -90,6 +90,7 @@ export interface FederalEntityType {
 
 export interface InstitutionFilter {
     deptDBID: number;
+    RSSDID: number | null;
     searchTxt: string;
     isStartsWith: boolean;
     selectedStates: string[] | null;
@@ -97,7 +98,7 @@ export interface InstitutionFilter {
 }
 
 export interface FedInstitutionFilter {
-    RSSDID: number | null;
+    RSSDID: number | undefined;
     searchTxt: string;
     isStartsWith: boolean;
     selectedStates: string[] | null;
@@ -109,6 +110,108 @@ export interface State {
     IsActive: boolean;
     Name: string;
     StateCode: string;
+}
+
+export interface DepartmentDBState {
+    activeDeptDB?: DepartmentDB;
+    activeInstitutions: Institution[];
+    departmentDBs: DepartmentDB[];
+    deptDBsLoading: boolean;
+    fedInstitutions: FederalInstitution[];
+    fedInstitutionFilter: FedInstitutionFilter;
+    fedInstitutionsLoading: boolean;
+    institutionsLoading: boolean;
+    institutionFilter: InstitutionFilter;
+    institutionTotalCnt: number;
+    institutionTypes: InstitutionType[];
+    searchTxt: string;
+    selectedInstitutionIndices: Array<number> | string;
+    showDeptDBs: boolean;
+    states: Array<State>;
+}
+
+export type KnownAction = RequestDepartmentDBsAction | ReceiveDepartmentDBsAction | SetInstitutionFilter
+    | SetFedInstitutionFilter | ReceiveInstitutionsAction | RequestInstitutionsAction
+    | RequestFedInstitutionsAction | ReceiveFedInstitutionsAction | LoadInstitutionTypesAction
+    | UpdateInstitutionSelection | AssignFederalInstitutionAction | SelectAllAction | SelectNoneAction
+    | SelectDeptDBAction | LoadStatesAction | ToggleDepartmentVisiblityAction;
+
+    interface AssignFederalInstitutionAction {
+    type: 'ASSIGN_FEDINSTITUTION';
+}
+
+interface RequestDepartmentDBsAction {
+    type: 'REQUEST_DEPARTMENTDBS';
+    searchTxt: string;
+    institutionFilter: InstitutionFilter;
+};
+
+interface ReceiveDepartmentDBsAction {
+    type: 'RECEIVE_DEPARTMENTDBS';
+    searchTxt: string;
+    departmentDBs: Array<DepartmentDB>;
+};
+
+interface SetInstitutionFilter {
+    type: 'SET_INSTITUTION_FILTER';
+    institutionFilter: InstitutionFilter;
+}
+
+interface SetFedInstitutionFilter {
+    type: 'SET_FEDINSTITUTION_FILTER';
+    fedInstitutionFilter: FedInstitutionFilter;
+}
+
+interface SelectAllAction {
+    type: 'SELECT_ALL';
+}
+
+interface SelectNoneAction {
+    type: 'SELECT_NONE';
+}
+
+interface ToggleDepartmentVisiblityAction {
+    type: 'TOGGLE_DEPARTMENT_VISIBILITY';
+}
+
+interface LoadStatesAction {
+    type: 'LOAD_STATES';
+    states: Array<State>;
+}
+
+interface LoadInstitutionTypesAction {
+    type: 'LOAD_INSTITUTIONTYPES';
+    instTypes: InstitutionType[];
+}
+
+interface RequestFedInstitutionsAction {
+    type: 'REQUEST_FEDINSTITUTIONS';
+};
+
+interface ReceiveFedInstitutionsAction {
+    type: 'RECEIVE_FEDINSTITUTIONS';
+    fedInstitutions: FederalInstitution[];
+};
+
+interface RequestInstitutionsAction {
+    type: 'REQUEST_INSTITUTIONS';
+};
+
+interface ReceiveInstitutionsAction {
+    type: 'RECEIVE_INSTITUTIONS';
+    activeInstitutions: Array<Institution>;
+    cnt: number;
+};
+
+interface SelectDeptDBAction {
+    type: 'SELECT_DEPTDB';
+    deptDBID: number;
+    institutionFilter: InstitutionFilter;
+};
+
+interface UpdateInstitutionSelection {
+    type: 'UPDATE_INSTITUTION_SELECTION';
+    indices: string | Array<number>;
 }
 
 export function MultiSort(...args: Array<any>) {

@@ -13,10 +13,11 @@ import NavigationClose from 'material-ui/svg-icons/navigation/close';
 import * as Radium from 'radium';
 import * as moment from 'moment';
 import {
+    DepartmentDBState,
     DepartmentDB,
 } from './../services/data-types';
 
-type DepartmentDBProps = DepartmentDBStore.DepartmentDBState &
+type DepartmentDBProps = DepartmentDBState &
     typeof DepartmentDBStore.actionCreators;
 
 interface AppState {
@@ -99,11 +100,15 @@ export class DepartmentDBsView extends Component<DepartmentDBProps, AppState> {
     }
 
     render() {
-        let { departmentDBs, deptDBsLoading, activeDeptDB, selectDeptDB } = this.props;
+        let { departmentDBs, 
+                deptDBsLoading, 
+                activeDeptDB, 
+                selectDeptDB, 
+                showDeptDBs } = this.props;
         let { searchTxt } = this.state;
 
         return (
-            <Paper style={styles.mainContainer} open={true} zDepth={2}>
+            <Paper style={{...styles.mainContainer, display: showDeptDBs ? 'inline' : 'none'}} open={true} zDepth={2}>
                 <AppBar
                     titleStyle={{ fontSize: 20 }}
                     iconElementLeft={<IconButton><NavigationClose /></IconButton>}

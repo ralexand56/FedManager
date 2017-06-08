@@ -31,7 +31,11 @@ import {
     ToolbarTitle
 } from 'material-ui/Toolbar';
 
-type InstitutionsProps = DepartmentDBStore.DepartmentDBState &
+import {
+    DepartmentDBState,
+} from './../services/data-types';
+
+type InstitutionsProps = DepartmentDBState &
     typeof DepartmentDBStore.actionCreators;
 
 const styles = {
@@ -211,7 +215,9 @@ export class InstitutionView extends Component<InstitutionsProps, AppState> {
                                 selected={arr.indexOf(ind) !== -1}
                                 style={{ height: 20 }}
                                 key={i.CustomID}>
-                                <TableRowColumn style={{ height: 20 }} >{i.CustomID}</TableRowColumn>
+                                <TableRowColumn
+                                    style={{ height: 20, color: i.RSSDID ? 'green' : 'red' }}
+                                >{i.CustomID}</TableRowColumn>
                                 <TableRowColumn style={{ height: 20 }} >{i.Name}</TableRowColumn>
                                 <TableRowColumn style={{ height: 20 }} >{i.StateCode}</TableRowColumn>
                                 <TableRowColumn style={{ height: 20 }} >{i.InstitutionType.Name}</TableRowColumn>
@@ -240,7 +246,7 @@ export class InstitutionView extends Component<InstitutionsProps, AppState> {
         this.props.loadStates();
         this.props.loadInstitutionTypes();
 
-        console.dir(this.node);
+        // console.dir(this.node);
     }
 }
 

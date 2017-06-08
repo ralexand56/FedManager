@@ -1,8 +1,12 @@
 // import { createSelector } from 'reselect';
 import * as DepartmentDB from './DepartmentDBReducer';
+
+import {
+    DepartmentDBState,
+} from './../services/data-types';
 // The top-level state object
 export interface ApplicationState {
-    departmentDBs: DepartmentDB.DepartmentDBState;
+    departmentDBs: DepartmentDBState;
 }
 
 // Whenever an action is dispatched, Redux will update each top-level application state property using
