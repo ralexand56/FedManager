@@ -58,7 +58,6 @@ const fetchInstitutions =
                 });
             }
             );
-
     };
 
 export const fetchFederalInstitutions =
