@@ -9,10 +9,10 @@ import {
   DepartmentDBState,
 } from './services/data-types';
 import * as DepartmentDBStore from './store/DepartmentDBReducer';
-import DepartmentDBsView from './components/DepartmentDBsView';
-import InstitutionsView from './components/InstitutionsView';
+import DepartmentDBsContainer from './components/DepartmentDBsContainer';
+import FederalInstitutionsContainer from './components/FederalInstitutionsContainer';
+import InstitutionsContainer from './components/InstitutionsContainer';
 import * as Radium from 'radium';
-import FederalInstitutionsView from './components/FederalInstitutionsView';
 // import MenuItem from 'material-ui/MenuItem';
 // import Divider from 'material-ui/Divider';
 import RaisedButton from 'material-ui/RaisedButton';
@@ -61,8 +61,8 @@ export class App extends Component<AppProps, void> {
       },
     );
 
-    let wl = hello('windows').getAuthResponse();
-    console.dir(wl);
+    // let wl = hello('windows').getAuthResponse();
+    // console.dir(wl);
     hello.on('auth.login', () => this.auth);
 
     // console.dir(hello);
@@ -106,11 +106,11 @@ export class App extends Component<AppProps, void> {
         </AppBar>
         <div style={styles.mainContainer}>
           <div style={styles.bodyContainer}>
-            <InstitutionsView />
-            <FederalInstitutionsView />
+            <InstitutionsContainer />
+            <FederalInstitutionsContainer />
           </div>
 
-          <DepartmentDBsView />
+          <DepartmentDBsContainer />
         </div>
       </div>
     );

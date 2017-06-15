@@ -3,7 +3,7 @@ import { composeWithDevTools } from 'redux-devtools-extension';
 import * as Redux from 'redux';
 import thunk from 'redux-thunk';
 import promiseMiddleware from 'redux-promise-middleware';
-import { logger } from 'redux-logger';
+// import { logger } from 'redux-logger';
 import * as Store from './store';
 
 export default function configureStore(initialState?: Store.ApplicationState) {
@@ -12,7 +12,7 @@ export default function configureStore(initialState?: Store.ApplicationState) {
     // If devTools is installed, connect to it
     // const devToolsExtension = windowIfDefined && windowIfDefined.devToolsExtension as () => GenericStoreEnhancer;
     const createStoreWithMiddleware = composeWithDevTools(
-        applyMiddleware(logger, thunk, promiseMiddleware()),
+        applyMiddleware(thunk, promiseMiddleware()),
     )(createStore);
 
     // Combine all reducers and instantiate the app-wide store instance

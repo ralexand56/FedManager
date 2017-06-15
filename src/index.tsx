@@ -6,6 +6,9 @@ import App from './App';
 import { Provider } from 'react-redux';
 import './index.css';
 import configureStore from './configureStore';
+import {
+  actionCreators
+} from './store/DepartmentDBReducer';
 import getMuiTheme from 'material-ui/styles/getMuiTheme';
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import { blueGrey500 } from 'material-ui/styles/colors';
@@ -25,6 +28,9 @@ injectTapEventPlugin();
 
 // const initialState = (window as any).initialReduxState as ApplicationState;
 const store = configureStore();
+
+store.dispatch(actionCreators.init());
+store.dispatch(actionCreators.requestDepartmentDBs('', store.getState().departmentDBs.institutionFilter));
 
 ReactDOM.render(
   (

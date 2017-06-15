@@ -57,7 +57,7 @@ interface AppState {
 
 @connect()
 @Radium
-export class InstitutionView extends Component<InstitutionsProps, AppState> {
+export class InstitutionsContainer extends Component<InstitutionsProps, AppState> {
     node: SelectField;
     isStartsWith: boolean = true;
     constructor() {
@@ -241,16 +241,9 @@ export class InstitutionView extends Component<InstitutionsProps, AppState> {
             </Paper>
         );
     }
-
-    componentDidMount() {
-        this.props.loadStates();
-        this.props.loadInstitutionTypes();
-
-        // console.dir(this.node);
-    }
 }
 
 export default connect(
     (state: ApplicationState) => state.departmentDBs,
     DepartmentDBStore.actionCreators
-)(InstitutionView);
+)(InstitutionsContainer);

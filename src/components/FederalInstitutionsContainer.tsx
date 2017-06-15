@@ -5,7 +5,9 @@ import { ApplicationState } from '../store';
 import { connect } from 'react-redux';
 import { FederalInstitutionView } from './FederalInstitutionView';
 import * as DepartmentDBStore from '../store/DepartmentDBReducer';
+import MenuItem from 'material-ui/MenuItem';
 import Paper from 'material-ui/Paper';
+import SelectField from 'material-ui/SelectField';
 import TextField from 'material-ui/TextField';
 import Toggle from 'material-ui/Toggle';
 import {
@@ -34,22 +36,44 @@ const styles = {
     } as React.CSSProperties,
 };
 
-export class FederalInstitutionsView extends Component<FedInstitutionsProps, void> {
+export class FederalInstitutionsContainer extends Component<FedInstitutionsProps, void> {
     handleSearchTxtChanged(e: React.FormEvent<{}>, newVal: string) {
         this.props.setFedInstitutionFilter({ ...this.props.fedInstitutionFilter, searchTxt: newVal });
     }
 
     handleRSSDIDChanged(e: React.FormEvent<{}>, newVal: string) {
-        this.props.setFedInstitutionFilter({ 
-            ...this.props.fedInstitutionFilter, 
-            RSSDID: newVal.trim() === '' ? undefined : parseInt(newVal, 10) 
+
+        console.dir(newVal);
+        this.props.setFedInstitutionFilter({
+            ...this.props.fedInstitutionFilter,
+            RSSDID: newVal.trim() === '' ? undefined : parseInt(newVal, 10)
+        });
+    }
+
+    handleSelectedTypeChanged = (evt: React.FormEvent<{}>,
+        index: number,
+        newVal: string[]) => {
+        this.props.setFedInstitutionFilter({
+            ...this.props.fedInstitutionFilter,
+            selectedTypes: Array.isArray(newVal) && newVal.length === 0 ? [''] : newVal,
+        });
+    }
+
+    handleSelectedStateChanged = (evt: React.FormEvent<{}>,
+        index: number,
+        newVal: string[]) => {
+        this.props.setFedInstitutionFilter({
+            ...this.props.fedInstitutionFilter,
+            selectedStates: Array.isArray(newVal) && newVal.length === 0 ? [''] : newVal,
         });
     }
 
     render() {
         let {
             fedInstitutions,
+            fedInstitutionTypes,
             fedInstitutionFilter,
+            states,
         } = this.props;
 
         return (
@@ -75,6 +99,38 @@ export class FederalInstitutionsView extends Component<FedInstitutionsProps, voi
                         <TextField
                             onChange={(e, newVal) => this.handleRSSDIDChanged(e, newVal)}
                             hintText="enter RSSDID..." />
+                        <SelectField
+                            style={{ fontSize: 15 }}
+                            multiple={true}
+                            value={fedInstitutionFilter.selectedTypes}
+                            onChange={this.handleSelectedTypeChanged}>
+                            <MenuItem
+                                value={''}
+                                primaryText="Select Type" />
+                            {
+                                fedInstitutionTypes.map(fedType =>
+                                    (
+                                        <MenuItem key={fedType.FederalEntityTypeCode}
+                                            value={fedType.FederalEntityTypeCode}
+                                            primaryText={fedType.Name} />)
+                                )}
+                        </SelectField>
+                        <SelectField
+                            style={{ fontSize: 15 }}
+                            multiple={true}
+                            value={fedInstitutionFilter.selectedStates}
+                            onChange={this.handleSelectedStateChanged}>
+                            <MenuItem
+                                value={''}
+                                primaryText="Select State" />
+                            {
+                                states.map(fedState =>
+                                    (
+                                        <MenuItem key={fedState.StateCode}
+                                            value={fedState.StateCode}
+                                            primaryText={fedState.Name} />)
+                                )}
+                        </SelectField>
                     </ToolbarGroup>
                     <ToolbarSeparator />
                 </Toolbar>
@@ -93,4 +149,4 @@ export class FederalInstitutionsView extends Component<FedInstitutionsProps, voi
 export default connect(
     (state: ApplicationState) => state.departmentDBs,
     DepartmentDBStore.actionCreators
-)(FederalInstitutionsView);
+)(FederalInstitutionsContainer);

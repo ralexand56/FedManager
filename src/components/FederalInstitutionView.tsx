@@ -55,8 +55,6 @@ export class FederalInstitutionView extends Component<FedInstitutionViewProps, v
         let { fedInst,
             selectedInstitutionIndices, } = this.props;
 
-        console.dir(fedInst.Institutions);
-
         return (
             <Paper style={styles.fedInstitution} zDepth={2}>
                 <AppBar

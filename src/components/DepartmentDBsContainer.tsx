@@ -82,7 +82,7 @@ const DepartmentDBView = (props: { dept: DepartmentDB, isActive: boolean }) => {
 };
 
 @Radium
-export class DepartmentDBsView extends Component<DepartmentDBProps, AppState> {
+export class DepartmentDBsContainer extends Component<DepartmentDBProps, AppState> {
     constructor() {
         super();
 
@@ -96,7 +96,7 @@ export class DepartmentDBsView extends Component<DepartmentDBProps, AppState> {
     }
 
     componentDidMount() {
-        this.props.requestDepartmentDBs('', this.props.institutionFilter);
+        // this.props.requestDepartmentDBs('', this.props.institutionFilter);
     }
 
     render() {
@@ -143,4 +143,4 @@ export class DepartmentDBsView extends Component<DepartmentDBProps, AppState> {
 export default connect(
     (state: ApplicationState) => state.departmentDBs,
     DepartmentDBStore.actionCreators
-)(DepartmentDBsView);
+)(DepartmentDBsContainer);
