@@ -37,17 +37,24 @@ const styles = {
 };
 
 export class FederalInstitutionsContainer extends Component<FedInstitutionsProps, void> {
-    handleSearchTxtChanged(e: React.FormEvent<{}>, newVal: string) {
-        this.props.setFedInstitutionFilter({ ...this.props.fedInstitutionFilter, searchTxt: newVal });
+    handleSearchTxtChanged(e: React.KeyboardEvent<HTMLInputElement>) {
+        if (e.keyCode === 13) {
+            this.props.setFedInstitutionFilter({
+                ...this.props.fedInstitutionFilter,
+                searchTxt: e.currentTarget.value
+            });
+        }
     }
 
-    handleRSSDIDChanged(e: React.FormEvent<{}>, newVal: string) {
+    handleRSSDIDChanged = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.keyCode === 13) {
+            let newVal = e.currentTarget.value;
 
-        console.dir(newVal);
-        this.props.setFedInstitutionFilter({
-            ...this.props.fedInstitutionFilter,
-            RSSDID: newVal.trim() === '' ? undefined : parseInt(newVal, 10)
-        });
+            this.props.setFedInstitutionFilter({
+                ...this.props.fedInstitutionFilter,
+                RSSDID: newVal.trim() === '' ? undefined : parseInt(newVal, 10)
+            });
+        }
     }
 
     handleSelectedTypeChanged = (evt: React.FormEvent<{}>,
@@ -55,7 +62,7 @@ export class FederalInstitutionsContainer extends Component<FedInstitutionsProps
         newVal: string[]) => {
         this.props.setFedInstitutionFilter({
             ...this.props.fedInstitutionFilter,
-            selectedTypes: Array.isArray(newVal) && newVal.length === 0 ? [''] : newVal,
+            selectedTypes: newVal.length === 0 ? [''] : newVal.filter(x => x !== ''),
         });
     }
 
@@ -88,7 +95,7 @@ export class FederalInstitutionsContainer extends Component<FedInstitutionsProps
                     <ToolbarTitle text="Search" />
                     <ToolbarGroup firstChild={true}>
                         <TextField
-                            onChange={(e, newVal) => this.handleSearchTxtChanged(e, newVal)}
+                            onKeyUp={(e: React.KeyboardEvent<HTMLInputElement>) => this.handleSearchTxtChanged(e)}
                             hintText="search by name..." />
                         <Toggle
                             style={{ width: 70 }}
@@ -97,7 +104,7 @@ export class FederalInstitutionsContainer extends Component<FedInstitutionsProps
                     </ToolbarGroup>
                     <ToolbarGroup>
                         <TextField
-                            onChange={(e, newVal) => this.handleRSSDIDChanged(e, newVal)}
+                            onKeyUp={(e: React.KeyboardEvent<HTMLInputElement>) => this.handleRSSDIDChanged(e)}
                             hintText="enter RSSDID..." />
                         <SelectField
                             style={{ fontSize: 15 }}

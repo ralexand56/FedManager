@@ -292,16 +292,22 @@ export const fetchFederalInstitutions =
             }
 
             if (searchOptions.isStartsWith) {
-                searchStr += ` and (startswith(FullName, '${nameSearch}') 
-            ${searchOptions.searchHoldingCompanies ? `or startswith(HoldingCompany/FullName, '${nameSearch}')` : ``})`;
+                let searchHoldingTxt = searchOptions.searchHoldingCompanies
+                    && `or startswith(HoldingCompany/FullName, '${nameSearch}')`;
+
+                searchStr += ` and (startswith(FullName, '${nameSearch}') ${searchHoldingTxt})`;
             } else {
-                searchStr += ` and (contains(FullName, '${nameSearch}') 
-            ${searchOptions.searchHoldingCompanies ? `or contains(HoldingCompany/FullName, '${nameSearch}')` : ``})`;
+                let searchHoldingTxt = searchOptions.searchHoldingCompanies
+                    && `or contains(HoldingCompany/FullName, '${nameSearch}')`;
+
+                searchStr += ` and (contains(FullName, '${nameSearch}') ${searchHoldingTxt})`;
             }
 
             searchStr += `&$top=50&$expand=Institutions,FederalEntityType,HoldingCompany&$orderby=FullName,StateCode`;
         }
         // console.dir(searchStr);
+
+        // debugger;
         fetch(searchStr)
             .then(response => response.json())
             .then(fedInsts => {
