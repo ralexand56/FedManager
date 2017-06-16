@@ -218,8 +218,8 @@ export interface InstitutionFilter {
     RSSDID: number | null;
     searchTxt: string;
     isStartsWith: boolean;
-    selectedStates: string[] | null;
-    selectedTypes: number[] | string | null;
+    selectedStates: string[];
+    selectedTypes: number[];
 }
 
 export interface FedInstitutionFilter {

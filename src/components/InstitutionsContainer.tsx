@@ -1,7 +1,6 @@
 import * as React from 'react';
 import { Component } from 'react';
 import { ApplicationState } from '../store';
-import AppBar from 'material-ui/AppBar';
 // import Divider from 'material-ui/Divider';
 import CircularProgress from 'material-ui/CircularProgress';
 import * as DepartmentDBStore from '../store/DepartmentDBReducer';
@@ -39,6 +38,9 @@ type InstitutionsProps = DepartmentDBState &
     typeof DepartmentDBStore.actionCreators;
 
 const styles = {
+    td: {
+        height: 20
+    } as React.CSSProperties,
     mainContainer: {
         height: '60%',
         flow: 1,
@@ -69,7 +71,7 @@ export class InstitutionsContainer extends Component<InstitutionsProps, AppState
     handleSelectedStateChanged = (
         evt: React.FormEvent<{}>,
         index: number,
-        value: Array<string> | null) => {
+        value: Array<string>) => {
         this.setState({ selectedState: value });
 
         this.props.setInstitutionFilter({ ...this.props.institutionFilter, selectedStates: value });
@@ -78,7 +80,7 @@ export class InstitutionsContainer extends Component<InstitutionsProps, AppState
     handleSelectedInstTypeChanged = (
         evt: React.FormEvent<{}>,
         index: number,
-        value: number[] | null) => {
+        value: number[]) => {
 
         this.props.setInstitutionFilter({ ...this.props.institutionFilter, selectedTypes: value });
     }
@@ -123,21 +125,24 @@ export class InstitutionsContainer extends Component<InstitutionsProps, AppState
 
         return (
             <Paper style={styles.mainContainer} zDepth={2}>
-                <AppBar
-                    titleStyle={{ fontSize: 20 }}
-                    showMenuIconButton={false}
-                    title={activeDeptDB && (
-                        <span>{activeDeptDB!.Name}
-                            <small> | Count: {institutionTotalCnt}</small></span>
-                    )} />
-                <Toolbar>
-                    <ToolbarTitle text="Search" />
+                <Toolbar
+                    style={{ height: 30, fontSize: 20 }}>
                     <ToolbarGroup>
-                        Selection: {selectedInstitutionIndices.length}
+                        {activeDeptDB && (
+                            <span>{activeDeptDB!.Name}
+                                <small> | Count: {institutionTotalCnt}</small></span>
+                        )}
+                    </ToolbarGroup>
+                    <ToolbarGroup>
+                        <ToolbarTitle text={`Selection: ${selectedInstitutionIndices.length}`} />
+                        <ToolbarSeparator />
                         <FlatButton label="All" onClick={this.handleSelectAll} />
                         <FlatButton label="None" onClick={this.handleSelectNone} />
                     </ToolbarGroup>
+                </Toolbar>
+                <Toolbar style={{ height: 30, fontSize: 20 }}>
                     <ToolbarGroup>
+                        <ToolbarTitle text="Search" />
                         <TextField style={{ padding: '0px' }}
                             onChange={(e, newVal) => this.handleSearchTxtChanged(e, newVal)}
                             hintText="search by name..." />
@@ -149,13 +154,12 @@ export class InstitutionsContainer extends Component<InstitutionsProps, AppState
                     </ToolbarGroup>
                     <ToolbarGroup>
                         <SelectField
-                            floatingLabelText={'select state'}
-                            value={this.state.selectedState}
+                            value={institutionFilter.selectedStates}
                             style={{ fontSize: 15 }}
                             multiple={true}
                             onChange={this.handleSelectedStateChanged}>
                             <MenuItem
-                                value={null}
+                                value={''}
                                 primaryText="Select State" />
                             {
                                 states.map(st =>
@@ -167,14 +171,13 @@ export class InstitutionsContainer extends Component<InstitutionsProps, AppState
                         </SelectField>
                         <SelectField
                             ref={node => this.node = node}
-                            floatingLabelText={'select type'}
                             style={{ fontSize: 15 }}
                             multiple={true}
                             value={institutionFilter.selectedTypes}
                             onChange={this.handleSelectedInstTypeChanged}>
                             <MenuItem
-                                value={[0]}
-                                primaryText="select type" />
+                                value={0}
+                                primaryText="Select Type" />
                             {
                                 institutionTypes.map(typ =>
                                     (
@@ -207,13 +210,13 @@ export class InstitutionsContainer extends Component<InstitutionsProps, AppState
                     </TableHeader>
                     <TableBody
                         deselectOnClickaway={false}
-                        displayRowCheckbox={false}
+                        displayRowCheckbox={true}
                         stripedRows={true}
                         showRowHover={false}>
                         {activeInstitutions && (activeInstitutions.map((i, ind) => (
-                            <TableRow className="row"
+                            <TableRow
                                 selected={arr.indexOf(ind) !== -1}
-                                style={{ height: 20 }}
+                                style={styles.td}
                                 key={i.CustomID}>
                                 <TableRowColumn
                                     style={{ height: 20, color: i.RSSDID ? 'green' : 'red' }}

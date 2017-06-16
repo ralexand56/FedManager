@@ -36,8 +36,8 @@ const unloadedState: DepartmentDBState = {
         searchTxt: '',
         isStartsWith: true,
         RSSDID: null,
-        selectedStates: [],
-        selectedTypes: null,
+        selectedStates: [''],
+        selectedTypes: [0],
     },
     institutionTotalCnt: 0,
     institutionTypes: [],
@@ -181,6 +181,13 @@ export const reducer: Reducer<DepartmentDBState> = (state: DepartmentDBState, ac
             return {
                 ...state,
                 showDeptDBs: !state.showDeptDBs,
+            };
+
+            case 'UPDATE_INSTITUTION_SELECTION':
+
+            return {
+                ...state,
+                selectedInstitutionIndices: action.indices,
             };
 
         default:

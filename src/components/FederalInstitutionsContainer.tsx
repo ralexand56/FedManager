@@ -91,9 +91,9 @@ export class FederalInstitutionsContainer extends Component<FedInstitutionsProps
                     title={(
                         <span>Federal Institutions <small> | Count: {fedInstitutions.length}</small></span>
                     )} />
-                <Toolbar>
-                    <ToolbarTitle text="Search" />
+                <Toolbar style={{ height: 35, fontSize: 20 }}>
                     <ToolbarGroup firstChild={true}>
+                         <ToolbarTitle text="Search" />
                         <TextField
                             onKeyUp={(e: React.KeyboardEvent<HTMLInputElement>) => this.handleSearchTxtChanged(e)}
                             hintText="search by name..." />
