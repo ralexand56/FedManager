@@ -95,10 +95,6 @@ export class DepartmentDBsContainer extends Component<DepartmentDBProps, AppStat
         this.props.requestDepartmentDBs(newVal, this.props.institutionFilter);
     }
 
-    componentDidMount() {
-        // this.props.requestDepartmentDBs('', this.props.institutionFilter);
-    }
-
     render() {
         let { departmentDBs, 
                 deptDBsLoading, 

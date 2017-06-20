@@ -20,7 +20,7 @@ const unloadedState: DepartmentDBState = {
     deptDBsLoading: false,
     fedInstitutions: [],
     fedInstitutionFilter: {
-        RSSDID: undefined,
+        RSSDID: 2253891,
         searchTxt: '',
         isStartsWith: true,
         searchBankingTypes: false,
@@ -36,8 +36,8 @@ const unloadedState: DepartmentDBState = {
         searchTxt: '',
         isStartsWith: true,
         RSSDID: null,
-        selectedStates: [''],
-        selectedTypes: [0],
+        selectedStates: ['AK'],
+        selectedTypes: [1],
     },
     institutionTotalCnt: 0,
     institutionTypes: [],
@@ -183,7 +183,7 @@ export const reducer: Reducer<DepartmentDBState> = (state: DepartmentDBState, ac
                 showDeptDBs: !state.showDeptDBs,
             };
 
-            case 'UPDATE_INSTITUTION_SELECTION':
+        case 'UPDATE_INSTITUTION_SELECTION':
 
             return {
                 ...state,
@@ -332,7 +332,7 @@ export const assignFedByDeptDB = (dispatch: (action: KnownAction) => void,
 
     switch (deptDBID) {
         case 1:
-            response = fetch(`DepositInstitutions(${parseInt(instID, 10)})`);
+            response = fetch(`${baseUrl}DepositInstitutions(${parseInt(instID, 10)})`);
 
             response.then(r => r.json()).then((institution: DepositInstitution) => {
 
@@ -342,7 +342,7 @@ export const assignFedByDeptDB = (dispatch: (action: KnownAction) => void,
                     BA_KEY_ID: rssDID.toString()
                 };
 
-                fetch(`DepositInstitutions(${institution.BA_ID})`, {
+                fetch(`${baseUrl}DepositInstitutions(${institution.BA_ID})`, {
                     method: 'patch',
                     body: JSON.stringify(rssInst)
                 });
@@ -350,16 +350,21 @@ export const assignFedByDeptDB = (dispatch: (action: KnownAction) => void,
             break;
 
         case 3:
-            response = fetch(`ConsumerInstitutions?$filter=BankID eq '${instID}'`);
+            let url = `${baseUrl}ConsumerInstitutions?$filter=BankID eq '${instID}'`;
+            response = fetch(url);
 
             response.then(r => r.json()).then(x => {
                 let institution = x.value[0];
 
                 institution.RSSDID = rssDID;
 
-                fetch(`ConsumerInstitutions(${institution.InstitutionID})`, {
-                    method: 'put',
-                    body: JSON.stringify(institution)
+                fetch(`${baseUrl}ConsumerInstitutions(${institution.InstitutionID})`, {
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                    },
+                    method: 'patch',
+                    body: `{RSSDID: ${rssDID}}`
                 });
             });
             break;
@@ -478,7 +483,6 @@ export const actionCreators = {
     selectDeptDB: (deptDBID: number, instFilter: InstitutionFilter):
         AppThunkAction<KnownAction> => (dispatch, getState) => {
             fetchInstitutions(dispatch, instFilter);
-
             dispatch({ type: 'SELECT_DEPTDB', deptDBID: deptDBID, institutionFilter: instFilter });
         },
 
