@@ -57,7 +57,6 @@ interface AppState {
     selectedState: Array<string> | null;
 }
 
-@connect()
 @Radium
 export class InstitutionsContainer extends Component<InstitutionsProps, AppState> {
     node: SelectField;
@@ -140,7 +139,7 @@ export class InstitutionsContainer extends Component<InstitutionsProps, AppState
                         <FlatButton label="None" onClick={this.handleSelectNone} />
                     </ToolbarGroup>
                 </Toolbar>
-                <Toolbar style={{ height: 30, fontSize: 20 }}>
+                <Toolbar style={{ height: 35, fontSize: 20 }}>
                     <ToolbarGroup>
                         <ToolbarTitle text="Search" />
                         <TextField style={{ padding: '0px' }}
@@ -196,10 +195,10 @@ export class InstitutionsContainer extends Component<InstitutionsProps, AppState
                     multiSelectable={true}>
                     <TableHeader
                         adjustForCheckbox={false}
-                        displaySelectAll={false}
+                        displaySelectAll={true}
                         enableSelectAll={true}>
                         <TableRow style={{ height: 20 }} >
-                            <TableHeaderColumn style={{ height: 20 }}>ID</TableHeaderColumn>
+                            <TableHeaderColumn style={{ height: 20, textAlign: 'left'  }}>ID</TableHeaderColumn>
                             <TableHeaderColumn style={{ height: 20 }}>Name</TableHeaderColumn>
                             <TableHeaderColumn style={{ height: 20 }}>State</TableHeaderColumn>
                             <TableHeaderColumn style={{ height: 20 }}>Type</TableHeaderColumn>

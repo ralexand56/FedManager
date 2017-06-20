@@ -11,7 +11,7 @@ import {
 } from './../services/data-types';
 import { Reducer } from 'redux';
 
-const baseUrl = `https://dev.informars.com/webservices/FedSvc/odata/`;
+const baseUrl = `http://dev.informars.com/webservices/FedSvc/odata/`;
 
 const unloadedState: DepartmentDBState = {
     activeDeptDB: undefined,

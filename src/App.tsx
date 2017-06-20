@@ -48,10 +48,10 @@ type AppProps = DepartmentDBState &
 
 @Radium
 export class App extends Component<AppProps, void> {
-  baseUrl = `http://dev.informars.com/webservices/FedSvc/odata/`;
+  //  baseUrl = `http://dev.informars.com/webservices/FedSvc/odata/`;
 
-  constructor() {
-    super();
+  constructor(props: AppProps) {
+    super(props);
 
     hello.init({
       windows: '8b8e7508-5d17-4800-9c56-a04d55ea53f5',

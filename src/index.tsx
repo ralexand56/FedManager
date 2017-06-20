@@ -1,5 +1,6 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
+import { AppContainer } from 'react-hot-loader';
 import App from './App';
 // import DepartmentDBsView from './components/DepartmentDBsView';
 // import InstitutionsView from './components/InstitutionsView';
@@ -32,13 +33,21 @@ const store = configureStore();
 store.dispatch(actionCreators.init());
 store.dispatch(actionCreators.requestDepartmentDBs('', store.getState().departmentDBs.institutionFilter));
 
-ReactDOM.render(
-  (
-    <Provider store={store}>
-      <MuiThemeProvider muiTheme={muiTheme}>
-        <App />
-      </MuiThemeProvider>
-    </Provider>
-  ),
-  document.getElementById('root') as HTMLElement
-);
+// const render = (Component: {}) => {
+  ReactDOM.render(
+    (
+      <AppContainer>
+        <Provider store={store}>
+          <MuiThemeProvider muiTheme={muiTheme}>
+            <App/>
+          </MuiThemeProvider>
+        </Provider>
+      </AppContainer>
+    ),
+    document.getElementById('root') as HTMLElement
+  );
+// };
+
+// if (module.hot) {
+//   module.hot.accept('./App', () => render(App));
+// }
