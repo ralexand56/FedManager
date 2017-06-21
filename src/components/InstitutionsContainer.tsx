@@ -116,6 +116,7 @@ export class InstitutionsContainer extends Component<InstitutionsProps, AppState
             states,
          } = this.props;
 
+         
         let arr: number[] = [];
 
         if (typeof (selectedInstitutionIndices) !== 'string') {

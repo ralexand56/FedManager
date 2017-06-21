@@ -17,7 +17,7 @@ import * as Radium from 'radium';
 // import Divider from 'material-ui/Divider';
 import RaisedButton from 'material-ui/RaisedButton';
 import './App.css';
-import * as hello from 'hellojs';
+// import * as hello from 'hellojs';
 
 const styles = {
   mainContainer: {
@@ -53,19 +53,19 @@ export class App extends Component<AppProps, void> {
   constructor(props: AppProps) {
     super(props);
 
-    hello.init({
-      windows: '8b8e7508-5d17-4800-9c56-a04d55ea53f5',
-    },
-               {
-        redirect_uri: 'https://login.live.com/oauth20_desktop.srf',
-      },
-    );
+    // hello.init({
+    //   windows: '8b8e7508-5d17-4800-9c56-a04d55ea53f5',
+    // },
+    //            {
+    //     redirect_uri: 'https://login.live.com/oauth20_desktop.srf',
+    //   },
+    // );
 
-    // let wl = hello('windows').getAuthResponse();
-    // console.dir(wl);
-    hello.on('auth.login', () => this.auth);
+    // // let wl = hello('windows').getAuthResponse();
+    // // console.dir(wl);
+    // hello.on('auth.login', () => this.auth);
 
-    // console.dir(hello);
+    // // console.dir(hello);
   }
 
   auth = (auth: { network: string }) => {
